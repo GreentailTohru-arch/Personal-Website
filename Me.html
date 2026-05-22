@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ren Kobayashi | 小林 然 - Digital Art Portfolio</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --card-hover-border: rgba(0, 255, 208, 0.4);
+        }
+
+        /* 加入平滑滚动特性以适配目录跳转 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* ----- 最底层：DotField 粒子点阵背景 (-20) ----- */
+        #dot-field-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -20;
+            pointer-events: none;
+            background-color: #000000;
+        }
+        #dot-field-canvas, #dot-field-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ----- 中间层：Color Bends 流体渐变背景 (-10) ----- */
+        #color-bends-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -10;
+            pointer-events: none;
+        }
+
+        /* ----- UI 首屏区域：全屏居中 ----- */
+        header {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 打字机光标动画 */
+        .typing-cursor {
+            display: inline-block;
+            font-weight: 300;
+            color: var(--text-main);
+            margin-left: 4px;
+            animation: blink 1s step-start infinite;
+            -webkit-text-fill-color: var(--text-main);
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        .tags {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .tag {
+            font-size: 1rem;
+            padding: 8px 20px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #ddd;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 向下滑动提示动画 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            animation: bounce 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+        
+        .scroll-hint svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--text-muted);
+            fill: none;
+            stroke-width: 2;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(15px); }
+        }
+
+        /* ----- 内容主体区域 ----- */
+        main {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 60px 20px 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 80px; 
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 3.2rem; 
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 15px;
+        }
+        
+        .section-title .char {
+            display: inline-block;
+            will-change: opacity, transform;
+        }
+
+        /* --- About me 样式 --- */
+        .about-content {
+            display: flex;
+            gap: 45px;
+            align-items: center;
+        }
+
+        /* --- Tilted Card --- */
+        .tilted-card-figure {
+            position: relative;
+            width: 320px;
+            height: 400px;
+            perspective: 1200px; 
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .tilted-card-inner {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            will-change: transform;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .tilted-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tilted-card-caption {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.95);
+            color: #111;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            will-change: transform, opacity;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform-origin: left top;
+        }
+
+        /* ======================== 基础毛玻璃样式 ======================== */
+        .glass-panel {
+            flex: 1;
+            padding: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            color: #eeeeee;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            position: relative;
+            overflow: hidden;
+            
+            backdrop-filter: blur(15px) saturate(120%);
+            -webkit-backdrop-filter: blur(15px) saturate(120%);
+            
+            transform: translateZ(0); 
+            will-change: transform, backdrop-filter;
+        }
+
+        /* 去除 Contact 和 Play with me 模块的边框 */
+        .contact-section .glass-panel,
+        .play-section .glass-panel {
+            border: none;
+        }
+
+        .about-text p {
+            margin-bottom: 15px;
+        }
+        .about-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Posts 列表样式 --- */
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .post-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 45px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .post-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--card-hover-border);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 208, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .post-card:hover::before {
+            left: 100%;
+        }
+
+        .post-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .post-title span {
+            font-size: 1.3rem; 
+            color: var(--text-muted);
+            font-weight: 400;
+            display: block; 
+            margin-left: 0; 
+            margin-top: 8px; 
+        }
+
+        .post-date {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            color: rgba(0, 255, 208, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .arrow {
+            font-size: 3rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .post-card:hover .arrow {
+            transform: translateX(12px);
+            color: #00ffd0;
+        }
+
+        /* --- 胶囊按钮拖拽滚动与简介样式 --- */
+        .contact-text p,
+        .play-text p {
+            margin-bottom: 25px;
+        }
+        
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 滚动视口 */
+        .marquee-viewport {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            /* 边缘羽化渐变 */
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+        }
+
+        .marquee-viewport:active {
+            cursor: grabbing;
+        }
+
+        /* 滚动轨道 */
+        .marquee-row {
+            display: flex;
+            gap: 14px;
+            width: max-content;
+            will-change: transform;
+            padding-bottom: 4px; /* 防止阴影被裁切 */
+        }
+
+        .gaming-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 0.95rem;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .gaming-badge:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--card-hover-border);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 208, 0.15);
+        }
+
+        .gaming-badge svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            opacity: 0.8;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .badge-platform {
+            font-weight: 600;
+            color: #ddd;
+            pointer-events: none;
+        }
+
+        .badge-divider {
+            margin: 0 8px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .badge-id {
+            font-family: 'Courier New', Courier, monospace;
+            color: rgba(0, 255, 208, 0.9);
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        @media (max-width: 850px) {
+            .about-content {
+                flex-direction: column;
+            }
+            .tilted-card-figure {
+                width: 100%;
+                max-width: 350px;
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 3.5rem; } 
+            .section-title { font-size: 2.8rem; } 
+            .post-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 25px;
+                padding: 35px 25px;
+            }
+            .arrow { align-self: flex-end; }
+            .post-title span { display: block; margin-left: 0; margin-top: 8px; }
+            
+            .gaming-badge {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        /* ================= Staggered Menu 目录样式 ================= */
+        .staggered-menu-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* 默认不阻挡下方点击 */
+            z-index: 9999;
+        }
+
+        .sm-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 10000;
+            pointer-events: auto; /* 按钮始终可点 */
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 22px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .sm-toggle:hover {
+            border-color: var(--card-hover-border);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sm-toggle-textWrap {
+            height: 1.2em;
+            overflow: hidden;
+            display: inline-block;
+            position: relative;
+        }
+
+        .sm-toggle-textInner {
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+
+        .sm-toggle-line {
+            line-height: 1.2em;
+        }
+
+        .sm-icon {
+            position: relative;
+            width: 16px;
+            height: 16px;
+        }
+
+        .sm-icon-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: currentColor;
+            border-radius: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .sm-icon-line-v {
+            transform: rotate(90deg);
+        }
+
+        .sm-prelayers, .staggered-menu-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 450px;
+            max-width: 100vw;
+            height: 100vh;
+        }
+
+        .sm-prelayer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateX(100%);
+            will-change: transform;
+        }
+
+        .staggered-menu-panel {
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            padding: 60px;
+            transform: translateX(100%);
+            will-change: transform;
+            pointer-events: auto; /* 菜单内部可点 */
+        }
+
+        .sm-panel-inner {
+            width: 100%;
+        }
+
+        .sm-panel-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+
+        .sm-panel-itemWrap {
+            overflow: hidden;
+        }
+
+        .sm-panel-item {
+            text-decoration: none;
+            color: #fff;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            transition: color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s ease;
+            transform-origin: left;
+        }
+
+        .sm-panel-item:hover {
+            color: #00ffd0;
+            transform: translateX(10px);
+        }
+
+        .sm-panel-itemLabel {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        .sm-panel-list[data-numbering="true"] .sm-panel-item::before {
+            content: "0" attr(data-index);
+            font-size: 1.1rem;
+            margin-right: 20px;
+            color: #00ffd0;
+            opacity: var(--sm-num-opacity, 0);
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+            letter-spacing: 2px;
+            will-change: opacity;
+        }
+        
+        @media (max-width: 600px) {
+            .sm-toggle { top: 20px; right: 20px; }
+            .sm-panel-item { font-size: 2.5rem; }
+            .staggered-menu-panel { padding: 40px; }
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+    <div id="dot-field-container">
+        <canvas id="dot-field-canvas"></canvas>
+        <svg id="dot-field-svg" style="pointer-events: none;">
+            <defs>
+                <radialGradient id="dot-field-glow-grad">
+                    <stop offset="0%" stop-color="rgba(140, 82, 255, 0.15)" />
+                    <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+            </defs>
+            <circle id="dot-field-glow" cx="-9999" cy="-9999" r="160" fill="url(#dot-field-glow-grad)" style="opacity: 0; will-change: opacity;" />
+        </svg>
+    </div>
+
+    <div id="color-bends-container"></div>
+
+    <header id="home">
+        <h1>小林 然 | <span id="typing-text"></span><span class="typing-cursor">|</span></h1>
+        <div class="subtitle">New Media Art & IxD</div>
+        <div class="tags">
+            <span class="tag">新媒体艺术</span>
+            <span class="tag">数字艺术爱好者</span>
+            <span class="tag">游戏玩家</span>
+        </div>
+        <div class="scroll-hint">
+            Scroll To Explore
+            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+    </header>
+
+    <main>
+        <section class="about-section" id="about">
+            <h2 class="section-title">About me</h2>
+            <div class="about-content">
+                <figure class="tilted-card-figure" id="tilted-card">
+                    <div class="tilted-card-inner" id="tilted-inner">
+                        <img src="https://img.cdn1.vip/i/6a102f2d9bd69_1779445549.jpg" alt="Ren Kobayashi" class="tilted-card-img">
+                    </div>
+                    <figcaption class="tilted-card-caption" id="tilted-caption">Ren Kobayashi</figcaption>
+                </figure>
+                
+                <div class="about-text glass-panel">
+                    <p>你好，我是<strong>小林 然 (Ren Kobayashi)</strong>。我是一名专注于新媒体互动技术与数字艺术的创作者。</p>
+                    <p>在这里，你可以看到我近期参与的关于点云动效、实时渲染以及几何互动视觉的各项实验与项目案例。我热衷于探索代码与视觉艺术之间的美妙边界，通过 Three.js、WebGL 等底层图形技术构建富有生命力的数字空间。</p>
+                    <p>欢迎浏览我的数字画廊，感受交互设计的魅力。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="posts-section" id="projects">
+            <h2 class="section-title">Posts</h2>
+            <div class="posts-list">
+                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Point Cloud VFX Lab <span>点云动效实验室</span></div>
+                        <div class="post-date">2026.05.21</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Geometric Warfare <span>几何战争</span></div>
+                        <div class="post-date">2026.05.15</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Cultural Relics Display Case <span>文物展示台</span></div>
+                        <div class="post-date">2026.05.01</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Answering Questions & Engraving <span>新媒体互动技术结课作业</span></div>
+                        <div class="post-date">2026.04.26</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Alpha <span>初次尝试</span></div>
+                        <div class="post-date">2025.12.02</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="contact-section" id="contact">
+            <h2 class="section-title">Contact</h2>
+            <div class="contact-text glass-panel">
+                <p>以下是我的社交媒体联系方式。点击下方胶囊按钮即可快速复制我的 ID 或跳转至对应主页。</p>
+                
+                <div class="badge-group">
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-contact">
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+                                <span class="badge-platform">X</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path></svg>
+                                <span class="badge-platform">Telegram</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10.5c.338 .25 .61 .515 .815 .794c.333 .45 .515 .93 .515 1.403c0 .247 -.043 .477 -.126 .689l-1.204 3.114a1 1 0 0 1 -1.41 .545l-3.32 -1.66a1 1 0 0 0 -.894 0l-3.32 1.66a1 1 0 0 1 -1.41 -.545l-1.204 -3.114a1.996 1.996 0 0 1 -.126 -.69c0 -.472 .182 -.952 .515 -1.402a2.97 2.97 0 0 1 .815 -.794a4.996 4.996 0 0 1 2.185 -.5c.813 0 1.562 .185 2.185 .5zm10 .5a4.996 4.996 0 0 0 -2.185 -.5c-.813 0 -1.562 .185 -2.185 .5a2.97 2.97 0 0 0 -.815 .794c-.333 .45 -.515 .93 -.515 1.403c0 .247 .043 .477 .126 .689l1.204 3.114a1 1 0 0 0 1.41 .545l3.32 -1.66a1 1 0 0 1 .894 0l3.32 1.66a1 1 0 0 0 1.41 -.545l1.204 -3.114c.083 -.212 .126 -.442 .126 -.69c0 -.472 -.182 -.952 -.515 -1.402a2.97 2.97 0 0 0 -.815 -.794z"></path></svg>
+                                <span class="badge-platform">Wechat</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="2"></rect><path d="M7 6l2.3 2.8"></path><path d="M17 6l-2.3 2.8"></path><line x1="9" y1="13" x2="9" y2="13.01"></line><line x1="15" y1="13" x2="15" y2="13.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
+                                <span class="badge-platform">Bilibili</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="play-section">
+            <h2 class="section-title">Play with me</h2>
+            <div class="play-text glass-panel">
+                <p>我常玩各类单机与多人游戏，欢迎添加好友一起游玩。点击下方胶囊按钮即可快速复制我的 ID。</p>
+                
+                <div class="badge-group">
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-1">
+                            <div class="gaming-badge" data-clipboard="greentail_tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Discord</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">greentail_tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Cthm2020">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Steam</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Cthm2020</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">PlayStation</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="小林卜一ル#1579">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Xbox</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">小林卜一ル#1579</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-2">
+                            <div class="gaming-badge" data-clipboard="Cthm#31979">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Battle.net</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Cthm#31979</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">EA App</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Epic Games</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">GOG</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Kindred_Krul">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Rockstar Games</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Kindred_Krul</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Ubisoft Connect</span>
+                                <span class="badge-divider">—</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Minecraft</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentailtohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Google Play Games</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentailtohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Apple Game Center</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        &copy; 2026 Ren Kobayashi (小林 然). All Rights Reserved.
+    </footer>
+
+    <div class="staggered-menu-wrapper" data-position="right">
+        <div class="sm-prelayers" aria-hidden="true">
+            <div class="sm-prelayer" style="background: rgba(140, 82, 255, 0.8)"></div>
+            <div class="sm-prelayer" style="background: rgba(0, 255, 208, 0.8)"></div>
+        </div>
+        
+        <button class="sm-toggle" type="button" aria-label="Toggle menu">
+            <span class="sm-toggle-textWrap" aria-hidden="true">
+                <span class="sm-toggle-textInner">
+                    <span class="sm-toggle-line">Menu</span>
+                    <span class="sm-toggle-line">Close</span>
+                </span>
+            </span>
+            <span class="sm-icon" aria-hidden="true">
+                <span class="sm-icon-line"></span>
+                <span class="sm-icon-line sm-icon-line-v"></span>
+            </span>
+        </button>
+        
+        <aside id="staggered-menu-panel" class="staggered-menu-panel">
+            <div class="sm-panel-inner">
+                <ul class="sm-panel-list" data-numbering="true">
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#home" data-index="1">
+                            <span class="sm-panel-itemLabel">首页</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#about" data-index="2">
+                            <span class="sm-panel-itemLabel">关于</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#projects" data-index="3">
+                            <span class="sm-panel-itemLabel">项目</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#contact" data-index="4">
+                            <span class="sm-panel-itemLabel">联系方式</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+
+                const titles = document.querySelectorAll('.section-title');
+                
+                titles.forEach(el => {
+                    const text = el.innerText;
+                    el.innerHTML = '';
+                    text.split('').forEach(char => {
+                        const span = document.createElement('span');
+                        span.className = 'char';
+                        span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                        el.appendChild(span);
+                    });
+
+                    const charElements = el.querySelectorAll('.char');
+
+                    gsap.fromTo(
+                        charElements,
+                        {
+                            willChange: 'opacity, transform',
+                            opacity: 0,
+                            yPercent: 120,
+                            scaleY: 2.3,
+                            scaleX: 0.7,
+                            transformOrigin: '50% 0%'
+                        },
+                        {
+                            duration: 1,
+                            ease: 'back.inOut(2)',
+                            opacity: 1,
+                            yPercent: 0,
+                            scaleY: 1,
+                            scaleX: 1,
+                            stagger: 0.03,
+                            scrollTrigger: {
+                                trigger: el,
+                                start: 'center bottom+=50%',
+                                end: 'bottom bottom-=40%',
+                                scrub: true
+                            }
+                        }
+                    );
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const panels = document.querySelectorAll('.glass-panel');
+            
+            const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+            const isFirefox = /Firefox/.test(navigator.userAgent);
+            if (isWebkit || isFirefox) return;
+
+            
+const optimizedMapData = (() => {
+    const w = 512;
+    const h = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = 'rgb(128,128,128)';
+    ctx.fillRect(0,0,w,h);
+
+    const gradX = ctx.createLinearGradient(w,0,0,0);
+    gradX.addColorStop(0,'rgba(255,0,0,0)');
+    gradX.addColorStop(1,'rgba(255,0,0,1)');
+    ctx.fillStyle = gradX;
+    ctx.fillRect(0,0,w,h);
+
+    ctx.globalCompositeOperation = 'screen';
+    const gradY = ctx.createLinearGradient(0,h,0,0);
+    gradY.addColorStop(0,'rgba(0,255,0,0)');
+    gradY.addColorStop(1,'rgba(0,255,0,1)');
+    ctx.fillStyle = gradY;
+    ctx.fillRect(0,0,w,h);
+
+    return canvas.toDataURL('image/png');
+})();
+
+const svgContainer = document.createElement('div');
+svgContainer.style.cssText =
+"position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;";
+document.body.appendChild(svgContainer);
+
+const filterId = 'fixed-liquid-glass-filter';
+
+svgContainer.innerHTML = `
+<svg xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter id="${filterId}" filterUnits="objectBoundingBox"
+x="0%" y="0%" width="100%" height="100%"
+color-interpolation-filters="sRGB">
+    <feImage href="${optimizedMapData}" x="0" y="0"
+        width="100%" height="100%"
+        preserveAspectRatio="none" result="map"/>
+
+    <feDisplacementMap scale="-38"
+        xChannelSelector="R"
+        yChannelSelector="G"
+        in="SourceGraphic" in2="map" result="displaced"/>
+
+    <feGaussianBlur in="displaced" stdDeviation="0.45"/>
+</filter>
+</defs>
+</svg>`;
+
+panels.forEach(el => {
+    el.style.background = 'rgba(255,255,255,0.05)';
+    el.style.backdropFilter =
+        `blur(14px) saturate(140%) url(#${filterId})`;
+    el.style.webkitBackdropFilter =
+        `blur(14px) saturate(140%) url(#${filterId})`;
+
+    el.style.isolation = 'isolate';
+    el.style.transform = 'translateZ(0)';
+});
+</script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const rows = document.querySelectorAll('.marquee-row');
+            
+            rows.forEach((row, index) => {
+                row.innerHTML += row.innerHTML;
+                
+                let progress = 0;
+                let speed = (index % 2 === 0) ? 0.4 : 0.6; 
+                let isDown = false;
+                let startX;
+                const viewport = row.parentElement;
+
+                viewport.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    startX = e.pageX;
+                });
+                window.addEventListener('mouseup', () => { isDown = false; });
+                window.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX;
+                    progress += (x - startX);
+                    startX = x;
+                });
+
+                viewport.addEventListener('touchstart', (e) => {
+                    isDown = true;
+                    startX = e.touches[0].pageX;
+                }, {passive: true});
+                window.addEventListener('touchend', () => { isDown = false; });
+                window.addEventListener('touchmove', (e) => {
+                    if (!isDown) return;
+                    const x = e.touches[0].pageX;
+                    progress += (x - startX);
+                    startX = x;
+                }, {passive: true});
+
+                function animate() {
+                    if (!isDown) {
+                        progress -= speed;
+                    }
+                    
+                    const halfWidth = row.scrollWidth / 2;
+                    
+                    if (Math.abs(progress) >= halfWidth) {
+                        progress += halfWidth;
+                    } else if (progress > 0) {
+                        progress -= halfWidth;
+                    }
+
+                    row.style.transform = `translateX(${progress}px)`;
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.body.addEventListener('click', (e) => {
+                const badge = e.target.closest('.gaming-badge');
+                if (!badge) return;
+
+                const textToCopy = badge.getAttribute('data-clipboard');
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const idSpan = badge.querySelector('.badge-id');
+                    const originalText = idSpan.innerText;
+                    
+                    idSpan.innerText = '已复制!';
+                    idSpan.style.color = '#00ffd0';
+                    
+                    setTimeout(() => {
+                        idSpan.innerText = originalText;
+                        idSpan.style.color = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const fig = document.getElementById('tilted-card');
+            const inner = document.getElementById('tilted-inner');
+            const cap = document.getElementById('tilted-caption');
+            
+            const scaleOnHover = 1.05; 
+            const rotateAmplitude = 14; 
+            
+            const target = { rotX: 0, rotY: 0, scale: 1, x: 0, y: 0, op: 0, rotCap: 0 };
+            const current = { rotX: 0, rotY: 0, scale: 1, x: 0, y: 0, op: 0, rotCap: 0 };
+            
+            let lastY = 0;
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+            if (!isMobile && fig) {
+                fig.addEventListener('mousemove', (e) => {
+                    const rect = fig.getBoundingClientRect();
+                    
+                    const offsetX = e.clientX - rect.left - rect.width / 2;
+                    const offsetY = e.clientY - rect.top - rect.height / 2;
+                    
+                    target.rotX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
+                    target.rotY = (offsetX / (rect.width / 2)) * rotateAmplitude;
+                    
+                    target.x = e.clientX - rect.left + 15;
+                    target.y = e.clientY - rect.top + 15;
+                    
+                    const velocityY = offsetY - lastY;
+                    target.rotCap = -velocityY * 0.6;
+                    lastY = offsetY;
+                });
+
+                fig.addEventListener('mouseenter', () => {
+                    target.scale = scaleOnHover;
+                    target.op = 1;
+                });
+
+                fig.addEventListener('mouseleave', () => {
+                    target.scale = 1;
+                    target.rotX = 0;
+                    target.rotY = 0;
+                    target.op = 0;
+                    target.rotCap = 0;
+                });
+
+                function animate() {
+                    const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+                    const f = 0.12; 
+
+                    current.rotX = lerp(current.rotX, target.rotX, f);
+                    current.rotY = lerp(current.rotY, target.rotY, f);
+                    current.scale = lerp(current.scale, target.scale, f);
+                    current.x = lerp(current.x, target.x, f);
+                    current.y = lerp(current.y, target.y, f);
+                    current.op = lerp(current.op, target.op, f);
+                    current.rotCap = lerp(current.rotCap, target.rotCap, f);
+
+                    inner.style.transform = `scale(${current.scale}) rotateX(${current.rotX}deg) rotateY(${current.rotY}deg)`;
+                    cap.style.transform = `translate(${current.x}px, ${current.y}px) rotate(${current.rotCap}deg)`;
+                    cap.style.opacity = current.op;
+
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+        });
+    </script>
+
+    <script>
+        const textElement = document.getElementById('typing-text');
+        const textArray = ["Ren Kobayashi", "こばやし ぜん", "Digital Artist"];
+        const typingSpeed = 80;
+        const deletingSpeed = 40;
+        const pauseDuration = 2500;
+        
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            const currentText = textArray[textIndex];
+            
+            if (isDeleting) {
+                textElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+                
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    textIndex = (textIndex + 1) % textArray.length;
+                    setTimeout(typeEffect, 500); 
+                } else {
+                    setTimeout(typeEffect, deletingSpeed);
+                }
+            } else {
+                textElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+                
+                if (charIndex === currentText.length) {
+                    isDeleting = true;
+                    setTimeout(typeEffect, pauseDuration);
+                } else {
+                    setTimeout(typeEffect, typingSpeed + Math.random() * 50);
+                }
+            }
+        }
+        
+        setTimeout(typeEffect, 1000);
+    </script>
+
+    <script>
+        const dfConfig = {
+            dotRadius: 1.5,
+            dotSpacing: 14,
+            cursorRadius: 500,
+            cursorForce: 0.1,
+            bulgeOnly: true,
+            bulgeStrength: 67,
+            glowRadius: 160,
+            sparkle: false,
+            waveAmplitude: 0,
+            gradientFrom: 'rgba(168, 85, 247, 0.35)',
+            gradientTo: 'rgba(0, 255, 208, 0.25)' 
+        };
+
+        const dfCanvas = document.getElementById('dot-field-canvas');
+        const dfCtx = dfCanvas.getContext('2d', { alpha: true });
+        const dfGlow = document.getElementById('dot-field-glow');
+        
+        let dfDots = [];
+        const dfMouse = { x: -9999, y: -9999, prevX: -9999, prevY: -9999, speed: 0 };
+        let dfSize = { w: 0, h: 0, offsetX: 0, offsetY: 0 };
+        let dfGlowOpacity = 0;
+        let dfEngagement = 0;
+        let dfFrameCount = 0;
+        let dfResizeTimer;
+
+        function buildDots(w, h) {
+            const step = dfConfig.dotRadius + dfConfig.dotSpacing;
+            const cols = Math.floor(w / step);
+            const rows = Math.floor(h / step);
+            const padX = (w % step) / 2;
+            const padY = (h % step) / 2;
+            dfDots = new Array(rows * cols);
+            let idx = 0;
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const ax = padX + col * step + step / 2;
+                    const ay = padY + row * step + step / 2;
+                    dfDots[idx++] = { ax, ay, sx: ax, sy: ay, vx: 0, vy: 0, x: ax, y: ay };
+                }
+            }
+        }
+
+        function resizeDotField() {
+            const rect = dfCanvas.parentElement.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            dfCanvas.width = w * dpr;
+            dfCanvas.height = h * dpr;
+            dfCanvas.style.width = w + 'px';
+            dfCanvas.style.height = h + 'px';
+            dfCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            dfSize = { w, h, offsetX: rect.left + window.scrollX, offsetY: rect.top + window.scrollY };
+            buildDots(w, h);
+        }
+
+        window.addEventListener('resize', () => {
+            clearTimeout(dfResizeTimer);
+            dfResizeTimer = setTimeout(resizeDotField, 100);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            dfMouse.x = e.pageX - dfSize.offsetX;
+            dfMouse.y = e.pageY - dfSize.offsetY;
+        }, { passive: true });
+
+        setInterval(() => {
+            const dx = dfMouse.prevX - dfMouse.x;
+            const dy = dfMouse.prevY - dfMouse.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            dfMouse.speed += (dist - dfMouse.speed) * 0.5;
+            if (dfMouse.speed < 0.001) dfMouse.speed = 0;
+            dfMouse.prevX = dfMouse.x;
+            dfMouse.prevY = dfMouse.y;
+        }, 20);
+
+        function dfTick() {
+            dfFrameCount++;
+            const { w, h } = dfSize;
+            const len = dfDots.length;
+
+            const targetEngagement = Math.min(dfMouse.speed / 5, 1);
+            dfEngagement += (targetEngagement - dfEngagement) * 0.06;
+            if (dfEngagement < 0.001) dfEngagement = 0;
+
+            dfGlowOpacity += (dfEngagement - dfGlowOpacity) * 0.08;
+            if (dfGlow) {
+                dfGlow.setAttribute('cx', dfMouse.x);
+                dfGlow.setAttribute('cy', dfMouse.y);
+                dfGlow.style.opacity = dfGlowOpacity;
+            }
+
+            dfCtx.clearRect(0, 0, w, h);
+
+            const grad = dfCtx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, dfConfig.gradientFrom);
+            grad.addColorStop(1, dfConfig.gradientTo);
+            dfCtx.fillStyle = grad;
+
+            const crSq = dfConfig.cursorRadius * dfConfig.cursorRadius;
+            const rad = dfConfig.dotRadius / 2;
+            const TWO_PI = Math.PI * 2;
+
+            dfCtx.beginPath();
+            for (let i = 0; i < len; i++) {
+                const d = dfDots[i];
+                const dx = dfMouse.x - d.ax;
+                const dy = dfMouse.y - d.ay;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq < crSq && dfEngagement > 0.01) {
+                    const dist = Math.sqrt(distSq);
+                    const push = (1 - dist / dfConfig.cursorRadius) ** 2 * dfConfig.bulgeStrength * dfEngagement;
+                    const angle = Math.atan2(dy, dx);
+                    d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.15;
+                    d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.15;
+                } else {
+                    d.sx += (d.ax - d.sx) * 0.1;
+                    d.sy += (d.ay - d.sy) * 0.1;
+                }
+
+                dfCtx.moveTo(d.sx + rad, d.sy);
+                dfCtx.arc(d.sx, d.sy, rad, 0, TWO_PI);
+            }
+            dfCtx.fill();
+            requestAnimationFrame(dfTick);
+        }
+
+        resizeDotField();
+        requestAnimationFrame(dfTick);
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const MAX_COLORS = 8;
+        
+        const vert = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }`;
+
+        const frag = `
+        #define MAX_COLORS ${MAX_COLORS}
+        uniform vec2 uCanvas;
+        uniform float uTime;
+        uniform float uSpeed;
+        uniform vec2 uRot;
+        uniform int uColorCount;
+        uniform vec3 uColors[MAX_COLORS];
+        uniform int uTransparent;
+        uniform float uScale;
+        uniform float uFrequency;
+        uniform float uWarpStrength;
+        uniform vec2 uPointer;
+        uniform float uMouseInfluence;
+        uniform float uParallax;
+        uniform float uNoise;
+        uniform int uIterations;
+        uniform float uIntensity;
+        uniform float uBandWidth;
+        varying vec2 vUv;
+
+        void main() {
+          float t = uTime * uSpeed;
+          vec2 p = vUv * 2.0 - 1.0;
+          p += uPointer * uParallax * 0.1;
+          vec2 rp = vec2(p.x * uRot.x - p.y * uRot.y, p.x * uRot.y + p.y * uRot.x);
+          vec2 q = vec2(rp.x * (uCanvas.x / uCanvas.y), rp.y);
+          q /= max(uScale, 0.0001);
+          q /= 0.5 + 0.2 * dot(q, q);
+          q += 0.2 * cos(t) - 7.56;
+          vec2 toward = (uPointer - rp);
+          q += toward * uMouseInfluence * 0.2;
+          
+          for (int j = 0; j < 5; j++) {
+              if (j >= uIterations - 1) break;
+              vec2 rr = sin(1.5 * (q.yx * uFrequency) + 2.0 * cos(q * uFrequency));
+              q += (rr - q) * 0.15;
+          }
+
+          vec3 col = vec3(0.0);
+          float a = 1.0;
+          
+          if (uColorCount > 0) {
+              vec2 s = q;
+              vec3 sumCol = vec3(0.0);
+              float cover = 0.0;
+              for (int i = 0; i < MAX_COLORS; ++i) {
+                    if (i >= uColorCount) break;
+                    s -= 0.01;
+                    vec2 r = sin(1.5 * (s.yx * uFrequency) + 2.0 * cos(s * uFrequency));
+                    float m0 = length(r + sin(5.0 * r.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+                    float kBelow = clamp(uWarpStrength, 0.0, 1.0);
+                    float kMix = pow(kBelow, 0.3);
+                    float gain = 1.0 + max(uWarpStrength - 1.0, 0.0);
+                    vec2 disp = (r - s) * kBelow;
+                    vec2 warped = s + disp * gain;
+                    float m1 = length(warped + sin(5.0 * warped.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+                    float m = mix(m0, m1, kMix);
+                    float w = 1.0 - exp(-uBandWidth / exp(uBandWidth * m));
+                    sumCol += uColors[i] * w;
+                    cover = max(cover, w);
+              }
+              col = clamp(sumCol, 0.0, 1.0);
+              a = uTransparent > 0 ? cover : 1.0;
+          } else {
+              vec2 s = q;
+              for (int k = 0; k < 3; ++k) {
+                  s -= 0.01;
+                  vec2 r = sin(1.5 * (s.yx * uFrequency) + 2.0 * cos(s * uFrequency));
+                  float m0 = length(r + sin(5.0 * r.y * uFrequency - 3.0 * t + float(k)) / 4.0);
+                  float kBelow = clamp(uWarpStrength, 0.0, 1.0);
+                  float kMix = pow(kBelow, 0.3);
+                  float gain = 1.0 + max(uWarpStrength - 1.0, 0.0);
+                  vec2 disp = (r - s) * kBelow;
+                  vec2 warped = s + disp * gain;
+                  float m1 = length(warped + sin(5.0 * warped.y * uFrequency - 3.0 * t + float(k)) / 4.0);
+                  float m = mix(m0, m1, kMix);
+                  col[k] = 1.0 - exp(-uBandWidth / exp(uBandWidth * m));
+              }
+              a = uTransparent > 0 ? max(max(col.r, col.g), col.b) : 1.0;
+          }
+
+          col *= uIntensity;
+
+          if (uNoise > 0.0001) {
+            float n = fract(sin(dot(gl_FragCoord.xy + vec2(uTime), vec2(12.9898, 78.233))) * 43758.5453123);
+            col += (n - 0.5) * uNoise;
+            col = clamp(col, 0.0, 1.0);
+          }
+
+          vec3 rgb = (uTransparent > 0) ? col * a : col;
+          gl_FragColor = vec4(rgb, a);
+        }`;
+
+        const container = document.getElementById('color-bends-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        
+        const renderer = new THREE.WebGLRenderer({
+            antialias: false,
+            powerPreference: 'high-performance',
+            alpha: true
+        });
+        
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setClearColor(0x000000, 0); 
+        container.appendChild(renderer.domElement);
+
+        const config = {
+            rotation: 90,
+            speed: 0.15,
+            scale: 1,
+            frequency: 1,
+            warpStrength: 1,
+            mouseInfluence: 1,
+            parallax: 0.5,
+            noise: 0.15,
+            iterations: 1,
+            intensity: 1.5,
+            bandWidth: 6,
+            transparent: true,
+            colors: ['#0f0c29', '#302b63', '#240b36', '#00ffd0', '#8c52ff']
+        };
+
+        const uColorsArray = Array.from({ length: MAX_COLORS }, () => new THREE.Vector3(0, 0, 0));
+        const rotRad = (config.rotation * Math.PI) / 180;
+
+        const material = new THREE.ShaderMaterial({
+            vertexShader: vert,
+            fragmentShader: frag,
+            uniforms: {
+                uCanvas: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                uTime: { value: 0 },
+                uSpeed: { value: config.speed },
+                uRot: { value: new THREE.Vector2(Math.cos(rotRad), Math.sin(rotRad)) },
+                uColorCount: { value: 0 },
+                uColors: { value: uColorsArray },
+                uTransparent: { value: config.transparent ? 1 : 0 },
+                uScale: { value: config.scale },
+                uFrequency: { value: config.frequency },
+                uWarpStrength: { value: config.warpStrength },
+                uPointer: { value: new THREE.Vector2(0, 0) },
+                uMouseInfluence: { value: config.mouseInfluence },
+                uParallax: { value: config.parallax },
+                uNoise: { value: config.noise },
+                uIterations: { value: config.iterations },
+                uIntensity: { value: config.intensity },
+                uBandWidth: { value: config.bandWidth }
+            },
+            premultipliedAlpha: true,
+            transparent: true
+        });
+
+        function updateColors(hexColors) {
+            const toVec3 = hex => {
+                const h = hex.replace('#', '').trim();
+                const v = h.length === 3
+                    ? [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)]
+                    : [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+                return new THREE.Vector3(v[0] / 255, v[1] / 255, v[2] / 255);
+            };
+
+            const arr = hexColors.filter(Boolean).slice(0, MAX_COLORS).map(toVec3);
+            for (let i = 0; i < MAX_COLORS; i++) {
+                const vec = material.uniforms.uColors.value[i];
+                if (i < arr.length) vec.copy(arr[i]);
+                else vec.set(0, 0, 0);
+            }
+            material.uniforms.uColorCount.value = arr.length;
+        }
+        updateColors(config.colors);
+
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+        scene.add(mesh);
+
+        function handleResize() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            renderer.setSize(w, h, false);
+            material.uniforms.uCanvas.value.set(w, h);
+        }
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        const pointerTarget = new THREE.Vector2(0, 0);
+        const pointerCurrent = new THREE.Vector2(0, 0);
+        const pointerSmooth = 8; 
+        
+        window.addEventListener('pointermove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 2 - 1;
+            const y = -(e.clientY / window.innerHeight) * 2 - 1;
+            pointerTarget.set(x, y);
+        });
+
+        const clock = new THREE.Clock();
+        function loop() {
+            requestAnimationFrame(loop);
+            
+            const dt = clock.getDelta();
+            const elapsed = clock.elapsedTime;
+            
+            material.uniforms.uTime.value = elapsed;
+
+            const amt = Math.min(1, dt * pointerSmooth);
+            pointerCurrent.lerp(pointerTarget, amt);
+            material.uniforms.uPointer.value.copy(pointerCurrent);
+
+            renderer.render(scene, camera);
+        }
+        
+        loop();
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 防御性检测，如果 GSAP 未加载给出控制台提示
+            if (typeof gsap === 'undefined') {
+                console.error("GSAP 库未加载成功，请检查网络或代理！");
+                return;
+            }
+
+            const toggleBtn = document.querySelector('.sm-toggle');
+            const panel = document.querySelector('.staggered-menu-panel');
+            const preLayers = document.querySelectorAll('.sm-prelayer');
+            const icon = document.querySelector('.sm-icon');
+            const itemEls = document.querySelectorAll('.sm-panel-itemLabel');
+            const numberEls = document.querySelectorAll('.sm-panel-item');
+            const textInner = document.querySelector('.sm-toggle-textInner');
+            const wrapper = document.querySelector('.staggered-menu-wrapper');
+            const menuLinks = document.querySelectorAll('.sm-panel-item');
+            
+            let isOpen = false;
+            let isAnimating = false;
+
+            // 1. 初始化所有图层至屏幕外部
+            gsap.set(panel, { xPercent: 100 });
+            gsap.set(preLayers, { xPercent: 100 });
+            gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+            gsap.set(textInner, { yPercent: 0 });
+
+            // 2. 核心展开与关闭逻辑
+            function toggleMenu() {
+                if (isAnimating) return;
+                isAnimating = true;
+                isOpen = !isOpen;
+
+                if (isOpen) {
+                    wrapper.style.pointerEvents = 'auto'; // 打开时允许点击面板
+                    
+                    // 为展开重置内部元素位置
+                    gsap.set(itemEls, { yPercent: 140, rotate: 10 });
+                    gsap.set(numberEls, { '--sm-num-opacity': 0 });
+                    
+                    const tl = gsap.timeline({ onComplete: () => { isAnimating = false; } });
+                    const layerArray = Array.from(preLayers);
+                    
+                    // 背景错层滑入
+                    layerArray.forEach((el, i) => {
+                        tl.fromTo(el, { xPercent: 100 }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
+                    });
+                    
+                    // 面板滑入
+                    const panelInsertTime = layerArray.length ? (layerArray.length - 1) * 0.07 + 0.08 : 0;
+                    tl.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.65, ease: 'power4.out' }, panelInsertTime);
+                    
+                    // 菜单项动画
+                    if (itemEls.length > 0) {
+                        const itemsStart = panelInsertTime + 0.65 * 0.15;
+                        tl.to(itemEls, { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: 0.1 }, itemsStart);
+                        tl.to(numberEls, { duration: 0.6, ease: 'power2.out', '--sm-num-opacity': 1, stagger: 0.08 }, itemsStart + 0.1);
+                    }
+
+                    // 按钮图标和文字变动
+                    gsap.to(icon, { rotate: 225, duration: 0.8, ease: 'power4.out' });
+                    gsap.to(textInner, { yPercent: -50, duration: 0.5, ease: 'power4.out' });
+                    gsap.to(toggleBtn, { color: '#00ffd0', borderColor: '#00ffd0', duration: 0.3, ease: 'power2.out' });
+                } else {
+                    wrapper.style.pointerEvents = 'none'; // 关闭时释放页面点击
+                    
+                    // 退出动画（完全合并所有图层统一推出，避免卡顿）
+                    const allElements = [...Array.from(preLayers), panel];
+                    gsap.to(allElements, { 
+                        xPercent: 100, 
+                        duration: 0.32, 
+                        ease: 'power3.in', 
+                        overwrite: 'auto',
+                        onComplete: () => {
+                            isAnimating = false;
+                        }
+                    });
+                    
+                    // 按钮复位
+                    gsap.to(icon, { rotate: 0, duration: 0.35, ease: 'power3.inOut', overwrite: 'auto' });
+                    gsap.to(textInner, { yPercent: 0, duration: 0.5, ease: 'power4.out', overwrite: 'auto' });
+                    gsap.to(toggleBtn, { color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.1)', duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+                }
+            }
+
+            // 3. 监听按钮点击
+            toggleBtn.addEventListener('click', toggleMenu);
+
+            // 4. 点击链接自动收起菜单并平滑跳转
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (isOpen) {
+                        toggleMenu();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
