@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ren Kobayashi | 小林 然 - Digital Art Portfolio</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --card-hover-border: rgba(0, 255, 208, 0.4);
+        }
+
+        /* 加入平滑滚动特性以适配目录跳转 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        /* ----- 最底层：DotField 粒子点阵背景 (-20) ----- */
+        #dot-field-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -20;
+            pointer-events: none;
+            background-color: #000000;
+        }
+        #dot-field-canvas, #dot-field-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ----- 中间层：Color Bends 流体渐变背景 (-10) ----- */
+        #color-bends-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -10;
+            pointer-events: none;
+        }
+
+        /* ================= 新增：左上角天气小组件样式 ================= */
+        .weather-widget {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 10000;
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 22px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+            user-select: none;
+        }
+
+        .weather-widget:hover {
+            border-color: var(--card-hover-border);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .weather-emoji {
+            font-size: 1.25rem;
+            line-height: 1;
+            will-change: transform;
+            transition: transform 0.3s ease;
+        }
+        
+        .weather-widget:hover .weather-emoji {
+            transform: scale(1.1);
+        }
+        /* ========================================================= */
+
+        /* ----- UI 首屏区域：全屏居中 ----- */
+        header {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 打字机光标动画 */
+        .typing-cursor {
+            display: inline-block;
+            font-weight: 300;
+            color: var(--text-main);
+            margin-left: 4px;
+            animation: blink 1s step-start infinite;
+            -webkit-text-fill-color: var(--text-main);
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        .tags {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .tag {
+            font-size: 1rem;
+            padding: 8px 20px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #ddd;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 向下滑动提示动画 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            animation: bounce 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+        
+        .scroll-hint svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--text-muted);
+            fill: none;
+            stroke-width: 2;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(15px); }
+        }
+
+        /* ----- 内容主体区域 ----- */
+        main {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 60px 20px 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 80px; 
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 3.2rem; 
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 15px;
+        }
+        
+        .section-title .char {
+            display: inline-block;
+            will-change: opacity, transform;
+        }
+
+        /* --- About me 样式 --- */
+        .about-content {
+            display: flex;
+            gap: 45px;
+            align-items: center;
+        }
+
+        /* --- Tilted Card --- */
+        .tilted-card-figure {
+            position: relative;
+            width: 320px;
+            height: 400px;
+            perspective: 1200px; 
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .tilted-card-inner {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            will-change: transform;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .tilted-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tilted-card-caption {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.95);
+            color: #111;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            will-change: transform, opacity;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform-origin: left top;
+        }
+
+        /* ======================== 基础毛玻璃样式 ======================== */
+        .glass-panel {
+            flex: 1;
+            padding: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            color: #eeeeee;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            position: relative;
+            overflow: hidden;
+            
+            backdrop-filter: blur(15px) saturate(120%);
+            -webkit-backdrop-filter: blur(15px) saturate(120%);
+            
+            transform: translateZ(0); 
+            will-change: transform, backdrop-filter;
+        }
+
+        /* 去除 Contact 和 Play 模块的部分特殊处理 */
+        .contact-section .glass-panel,
+        .play-section .glass-panel {
+            border: none;
+        }
+
+        .about-text p {
+            margin-bottom: 15px;
+        }
+        .about-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Posts 列表样式 --- */
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .post-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 45px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: -45%;
+            left: -70%;
+            width: 42%;
+            height: 190%;
+            border-radius: 999px;
+            pointer-events: none;
+            opacity: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.075), transparent);
+            filter: blur(18px);
+            transform: translateX(-120%) rotate(12deg);
+            transition: transform 0.75s ease, opacity 0.45s ease;
+            will-change: transform, opacity;
+        }
+
+        .post-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--card-hover-border);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 208, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .post-card:hover::before {
+            opacity: 1;
+            transform: translateX(520%) rotate(12deg);
+        }
+
+        .post-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .post-title span {
+            font-size: 1.3rem; 
+            color: var(--text-muted);
+            font-weight: 400;
+            display: block; 
+            margin-left: 0; 
+            margin-top: 8px; 
+        }
+
+        .post-date {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            color: rgba(0, 255, 208, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .arrow {
+            font-size: 3rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .post-card:hover .arrow {
+            transform: translateX(12px);
+            color: #00ffd0;
+        }
+
+        /* --- 胶囊按钮拖拽滚动与简介样式 --- */
+        .contact-text p,
+        .play-text p {
+            margin-bottom: 25px;
+        }
+        
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 滚动视口 */
+        .marquee-viewport {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            /* 边缘羽化渐变 */
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+        }
+
+        .marquee-viewport:active {
+            cursor: grabbing;
+        }
+
+        /* 滚动轨道 */
+        .marquee-row {
+            display: flex;
+            gap: 14px;
+            width: max-content;
+            will-change: transform;
+            padding-bottom: 4px; /* 防止阴影被裁切 */
+        }
+
+        .gaming-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 18px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-size: 0.95rem;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .gaming-badge:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--card-hover-border);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 208, 0.15);
+        }
+
+        .gaming-badge svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            opacity: 0.8;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .badge-platform {
+            font-weight: 600;
+            color: #ddd;
+            pointer-events: none;
+        }
+
+        .badge-divider {
+            margin: 0 8px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .badge-id {
+            font-family: 'Courier New', Courier, monospace;
+            color: rgba(0, 255, 208, 0.9);
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        /* ======================== 游戏画廊样式 ======================== */
+        .game-gallery-viewport {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            margin: 15px 0 35px 0;
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+        }
+
+        .game-gallery-viewport:active {
+            cursor: grabbing;
+        }
+
+        .game-gallery-track {
+            display: flex;
+            gap: 24px;
+            width: max-content;
+            will-change: transform;
+            padding: 20px 0; /* 为悬停放大和位移留出空间 */
+        }
+
+        .game-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            user-select: none;
+            width: 130px; /* 固定卡片宽度，避免超长文字撑大导致间距变动 */
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 195px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            pointer-events: none; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-name-wrapper {
+            width: 100%;
+            margin-top: 14px;
+            overflow: hidden;
+            position: relative;
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+            display: flex;
+            justify-content: center; /* 短文字居中 */
+        }
+
+        .game-name-wrapper.is-overflow {
+            justify-content: flex-start; /* 长文字左对齐滚动 */
+        }
+
+        .game-name {
+            display: inline-block;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: color 0.3s ease;
+        }
+
+        .game-card:hover .game-name, .game-card:active .game-name {
+            color: #ffffff;
+        }
+
+        /* 游戏文字无缝滚动动画 */
+        @keyframes gameNameMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .marquee-inner {
+            display: flex;
+            width: max-content;
+            animation: gameNameMarquee linear infinite;
+        }
+
+        /* ======================== Digital 配置模块样式 ======================== */
+        .digital-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+        
+        .digital-card {
+            padding: 35px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .peripherals-card {
+            grid-column: span 2;
+        }
+        
+        .digital-category {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #00ffd0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        
+        .digital-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: #dddddd;
+            font-size: 1.05rem;
+        }
+        
+        .peripherals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        /* ======================== 新增：Photo 照片堆叠模块样式 ======================== */
+        .photo-content {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        .photo-stack-container {
+            position: relative;
+            width: 380px;
+            height: 500px;
+            perspective: 1000px;
+            flex-shrink: 0;
+            margin-left: 20px;
+        }
+
+        .stack-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            transform-origin: 90% 90%; /* 参考堆叠原代码的原点 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: grab;
+            will-change: transform, opacity;
+            touch-action: none; /* 禁用移动端在此区域的原生滚动以支持滑动 */
+            background: #111;
+        }
+
+        .stack-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none; /* 防止图片自带的拖拽拦截事件 */
+        }
+
+        .photo-info-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .photo-info-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .photo-date {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            color: rgba(0, 255, 208, 0.8);
+            letter-spacing: 1px;
+        }
+
+        .photo-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .photo-desc {
+            color: #eeeeee;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        @media (max-width: 850px) {
+            .about-content {
+                flex-direction: column;
+            }
+            .tilted-card-figure {
+                width: 100%;
+                max-width: 350px;
+                height: 350px;
+            }
+            .digital-grid {
+                grid-template-columns: 1fr;
+            }
+            .peripherals-card {
+                grid-column: span 1;
+            }
+            .photo-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+            .photo-stack-container {
+                margin-left: 0;
+                width: 100%;
+                max-width: 350px;
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 3.5rem; } 
+            .section-title { font-size: 2.8rem; } 
+            .post-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 25px;
+                padding: 35px 25px;
+            }
+            .arrow { align-self: flex-end; }
+            .post-title span { display: block; margin-left: 0; margin-top: 8px; }
+            
+            .gaming-badge {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+            }
+
+            .game-card {
+                width: 110px; /* 移动端锁定宽度 */
+            }
+            .game-card img {
+                height: 165px;
+            }
+
+            .digital-card {
+                padding: 30px 25px;
+            }
+            .peripherals-grid {
+                grid-template-columns: 1fr;
+            }
+            .weather-widget {
+                top: 20px;
+                left: 20px;
+                padding: 10px 16px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        /* ================= 纯原生 CSS 重写版 Staggered Menu 目录样式 ================= */
+        .staggered-menu-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* 默认不阻挡下方点击 */
+            z-index: 9999;
+        }
+        
+        .staggered-menu-wrapper.is-open {
+            pointer-events: auto; /* 展开时接管页面点击 */
+        }
+
+        .sm-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 10000;
+            pointer-events: auto; /* 按钮始终可点 */
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 22px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+        }
+
+        .sm-toggle:hover {
+            border-color: var(--card-hover-border);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .staggered-menu-wrapper.is-open .sm-toggle {
+            color: #00ffd0;
+            border-color: #00ffd0;
+        }
+
+        .sm-toggle-textWrap {
+            height: 1.2em;
+            overflow: hidden;
+            display: inline-block;
+            position: relative;
+        }
+
+        .sm-toggle-textInner {
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+            transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .staggered-menu-wrapper.is-open .sm-toggle-textInner {
+            transform: translateY(-50%);
+        }
+
+        .sm-toggle-line {
+            line-height: 1.2em;
+        }
+
+        .sm-icon {
+            position: relative;
+            width: 16px;
+            height: 16px;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .staggered-menu-wrapper.is-open .sm-icon {
+            transform: rotate(225deg);
+        }
+
+        .sm-icon-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: currentColor;
+            border-radius: 2px;
+        }
+
+        .sm-icon-line-v {
+            transform: rotate(90deg);
+        }
+
+        .sm-prelayers, .staggered-menu-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 450px;
+            max-width: 100vw;
+            height: 100vh;
+        }
+
+        .sm-prelayer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: translateX(100%);
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+            will-change: transform;
+        }
+
+        .staggered-menu-panel {
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            padding: 60px;
+            transform: translateX(100%);
+            transition: transform 0.65s cubic-bezier(0.77, 0, 0.175, 1);
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        .staggered-menu-wrapper.is-open .staggered-menu-panel {
+            pointer-events: auto;
+        }
+
+        /* 展开时的背景错层动画 */
+        .staggered-menu-wrapper.is-open .layer-1 {
+            transform: translateX(0);
+            transition-delay: 0s;
+        }
+        .staggered-menu-wrapper.is-open .layer-2 {
+            transform: translateX(0);
+            transition-delay: 0.1s;
+        }
+        .staggered-menu-wrapper.is-open .staggered-menu-panel {
+            transform: translateX(0);
+            transition-delay: 0.2s;
+        }
+
+        /* 收起时的背景错层动画 (延迟反转以保持丝滑) */
+        .staggered-menu-wrapper:not(.is-open) .staggered-menu-panel {
+            transition-delay: 0s;
+        }
+        .staggered-menu-wrapper:not(.is-open) .layer-2 {
+            transition-delay: 0.1s;
+        }
+        .staggered-menu-wrapper:not(.is-open) .layer-1 {
+            transition-delay: 0.2s;
+        }
+
+        .sm-panel-inner {
+            width: 100%;
+        }
+
+        .sm-panel-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+        }
+
+        .sm-panel-itemWrap {
+            overflow: hidden;
+        }
+
+        .sm-panel-item {
+            text-decoration: none;
+            color: #fff;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .sm-panel-item:hover {
+            color: #00ffd0;
+        }
+
+        .sm-panel-itemLabel {
+            display: inline-block;
+            transform: translateY(120%) rotate(5deg);
+            opacity: 0;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.6s ease;
+            will-change: transform, opacity;
+        }
+
+        .staggered-menu-wrapper.is-open .sm-panel-itemLabel {
+            transform: translateY(0) rotate(0);
+            opacity: 1;
+        }
+
+        .sm-panel-list[data-numbering="true"] .sm-panel-item::before {
+            content: "0" attr(data-index);
+            font-size: 1.1rem;
+            margin-right: 20px;
+            color: #00ffd0;
+            opacity: 0;
+            transform: translateX(-20px);
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .staggered-menu-wrapper.is-open .sm-panel-item::before {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* 菜单文字的交错浮现延迟 */
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(1) .sm-panel-itemLabel,
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(1) .sm-panel-item::before { transition-delay: 0.35s; }
+        
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(2) .sm-panel-itemLabel,
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(2) .sm-panel-item::before { transition-delay: 0.45s; }
+        
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(3) .sm-panel-itemLabel,
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(3) .sm-panel-item::before { transition-delay: 0.55s; }
+        
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(4) .sm-panel-itemLabel,
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(4) .sm-panel-item::before { transition-delay: 0.65s; }
+
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(5) .sm-panel-itemLabel,
+        .staggered-menu-wrapper.is-open .sm-panel-itemWrap:nth-child(5) .sm-panel-item::before { transition-delay: 0.75s; }
+
+        /* 菜单收起时文字立刻隐藏，无延迟 */
+        .staggered-menu-wrapper:not(.is-open) .sm-panel-itemLabel,
+        .staggered-menu-wrapper:not(.is-open) .sm-panel-item::before {
+            transition-delay: 0s;
+        }
+        
+        @media (max-width: 600px) {
+            .sm-toggle { top: 20px; right: 20px; }
+            .sm-panel-item { font-size: 2.5rem; }
+            .staggered-menu-panel { padding: 40px; }
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+</head>
+<body>
+
+    <div id="dot-field-container">
+        <canvas id="dot-field-canvas"></canvas>
+        <svg id="dot-field-svg" style="pointer-events: none;">
+            <defs>
+                <radialGradient id="dot-field-glow-grad">
+                    <stop offset="0%" stop-color="rgba(140, 82, 255, 0.15)" />
+                    <stop offset="100%" stop-color="transparent" />
+                </radialGradient>
+            </defs>
+            <circle id="dot-field-glow" cx="-9999" cy="-9999" r="160" fill="url(#dot-field-glow-grad)" style="opacity: 0; will-change: opacity;" />
+        </svg>
+    </div>
+
+    <div id="color-bends-container"></div>
+    
+    <div class="weather-widget" id="weather-widget" title="点击刷新天气">
+        <span class="weather-emoji" id="weather-emoji">⛅</span>
+        <span class="weather-text" id="weather-text">--°C</span>
+    </div>
+    <header id="home">
+        <h1>小林 然 | <span id="typing-text"></span><span class="typing-cursor">|</span></h1>
+        <div class="subtitle">New Media Art & IxD</div>
+        <div class="tags">
+            <span class="tag">新媒体艺术</span>
+            <span class="tag">数字艺术爱好者</span>
+            <span class="tag">游戏玩家</span>
+        </div>
+        <div class="scroll-hint">
+            Scroll To Explore
+            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+    </header>
+
+    <main>
+        <section class="about-section" id="about">
+            <h2 class="section-title">About me</h2>
+            <div class="about-content">
+                <figure class="tilted-card-figure" id="tilted-card">
+                    <div class="tilted-card-inner" id="tilted-inner">
+                        <img src="https://img.cdn1.vip/i/6a102f2d9bd69_1779445549.jpg" alt="Ren Kobayashi" class="tilted-card-img">
+                    </div>
+                    <figcaption class="tilted-card-caption" id="tilted-caption">Ren Kobayashi</figcaption>
+                </figure>
+                
+                <div class="about-text glass-panel">
+                    <p>你好，我是<strong>小林 然 (Ren Kobayashi)</strong>。我是一名专注于新媒体互动技术与数字艺术的创作者。</p>
+                    <p>在这里，你可以看到我近期参与的关于点云动效、实时渲染以及几何互动视觉的各项实验与项目案例。我热衷于探索代码与视觉艺术之间的美妙边界，通过 Three.js、WebGL 等底层图形技术构建富有生命力的数字空间。</p>
+                    <p>欢迎浏览我的数字画廊，感受交互设计的魅力。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="posts-section" id="projects">
+            <h2 class="section-title">Posts</h2>
+            <div class="posts-list">
+                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Point Cloud VFX Lab <span>点云动效实验室</span></div>
+                        <div class="post-date">2026.05.21</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Geometric Warfare <span>几何战争</span></div>
+                        <div class="post-date">2026.05.15</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Cultural Relics Display Case <span>文物展示台</span></div>
+                        <div class="post-date">2026.05.01</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Answering Questions & Engraving <span>新媒体互动技术结课作业</span></div>
+                        <div class="post-date">2026.04.26</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel">
+                    <div class="post-info">
+                        <div class="post-title">Alpha <span>初次尝试</span></div>
+                        <div class="post-date">2025.12.02</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="contact-section" id="contact">
+            <h2 class="section-title">Contact</h2>
+            
+            <div class="falling-text-container glass-panel" id="falling-text-container" style="margin-bottom: 50px; cursor: pointer; position: relative; padding: 60px 30px 30px; text-align: center; border: 1px solid var(--card-border); overflow: hidden; display: flex; align-items: flex-start; justify-content: center; min-height: 450px;">
+                
+                <div id="falling-hint" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; font-weight: 800; color: rgba(255, 255, 255, 0.06); pointer-events: none; user-select: none; z-index: 1; letter-spacing: 0.2em; white-space: nowrap; transition: opacity 0.4s ease;">点击我</div>
+
+                <div id="falling-text-target" style="font-size: 1.6rem; color: #eeeeee; font-weight: 600; letter-spacing: 2px; line-height: 2.2; pointer-events: none; user-select: none; z-index: 2; max-width: 95%; text-align: center;">
+                    </div>
+                
+                <div id="falling-text-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
+            </div>
+
+            <div class="contact-text glass-panel">
+                <p>以下是我的社交媒体联系方式。点击下方胶囊按钮即可快速复制我的 ID 或跳转至对应主页。</p>
+                
+                <div class="badge-group">
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-contact">
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+                                <span class="badge-platform">X</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path></svg>
+                                <span class="badge-platform">Telegram</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10.5c.338 .25 .61 .515 .815 .794c.333 .45 .515 .93 .515 1.403c0 .247 -.043 .477 -.126 .689l-1.204 3.114a1 1 0 0 1 -1.41 .545l-3.32 -1.66a1 1 0 0 0 -.894 0l-3.32 1.66a1 1 0 0 1 -1.41 -.545l-1.204 -3.114a1.996 1.996 0 0 1 -.126 -.69c0 -.472 .182 -.952 .515 -1.402a2.97 2.97 0 0 1 .815 -.794a4.996 4.996 0 0 1 2.185 -.5c.813 0 1.562 .185 2.185 .5zm10 .5a4.996 4.996 0 0 0 -2.185 -.5c-.813 0 -1.562 .185 -2.185 .5a2.97 2.97 0 0 0 -.815 .794c-.333 .45 -.515 .93 -.515 1.403c0 .247 .043 .477 .126 .689l1.204 3.114a1 1 0 0 0 1.41 .545l3.32 -1.66a1 1 0 0 1 .894 0l3.32 1.66a1 1 0 0 0 1.41 -.545l1.204 -3.114c.083 -.212 .126 -.442 .126 -.69c0 -.472 -.182 -.952 -.515 -1.402a2.97 2.97 0 0 0 -.815 -.794z"></path></svg>
+                                <span class="badge-platform">Wechat</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="2"></rect><path d="M7 6l2.3 2.8"></path><path d="M17 6l-2.3 2.8"></path><line x1="9" y1="13" x2="9" y2="13.01"></line><line x1="15" y1="13" x2="15" y2="13.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
+                                <span class="badge-platform">Bilibili</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="play-section">
+            <h2 class="section-title">Play with me</h2>
+            
+            <div class="game-gallery-viewport">
+                <div class="game-gallery-track" id="game-gallery-track">
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b8eb7ad9_1779469198.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Death Stranding 2：On the Beach</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b90e9f1d_1779469200.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">PRAGMATA</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b8ee46e2_1779469198.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Planet Coaster 2</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b8f93708_1779469199.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Gray Zone Warfare</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b9437934_1779469204.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Escape from Tarkov</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b95a355a_1779469205.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Call of Duty: Black Ops 7</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b967fa6f_1779469206.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Battlefield 6</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b9745c0c_1779469207.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Apex legends</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b992aa2f_1779469209.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Bodycam</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b996cd47_1779469209.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Call of Duty: Modern Warfare</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b93f2419_1779469203.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Marathon</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b92c15b2_1779469202.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Hot Dogs, Horseshoes & Hand Grenades</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b91e2b11_1779469201.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Cities: Skylines II</span></div>
+                    </div>
+                    <div class="game-card">
+                        <img src="https://img.cdn1.vip/i/6a108b91aa98b_1779469201.webp" alt="Game">
+                        <div class="game-name-wrapper"><span class="game-name">Resident Evil Requiem</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="play-text glass-panel">
+                <p>我常玩各类单机与多人游戏，欢迎添加好友一起游玩。点击下方胶囊按钮即可快速复制我的 ID。</p>
+                <div class="badge-group">
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-1">
+                            <div class="gaming-badge" data-clipboard="greentail_tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Discord</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">greentail_tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Cthm2020">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Steam</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Cthm2020</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">PlayStation</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="小林卜一ル#1579">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Xbox</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">小林卜一ル#1579</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="marquee-viewport">
+                        <div class="marquee-row" id="marquee-row-2">
+                            <div class="gaming-badge" data-clipboard="Cthm#31979">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Battle.net</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Cthm#31979</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">EA App</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Epic Games</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">GOG</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Kindred_Krul">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Rockstar Games</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Kindred_Krul</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Ubisoft</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Minecraft</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentailtohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Google Play Games</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentailtohru</span>
+                            </div>
+                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+                                <span class="badge-platform">Apple Game Center</span>
+                                <span class="badge-divider">·</span>
+                                <span class="badge-id">Greentail_Tohru</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="photo-section" id="photo">
+            <h2 class="section-title">Photo</h2>
+            <div class="photo-content">
+                <div class="photo-stack-container" id="photo-stack">
+                    </div>
+                
+                <div class="photo-info-panel glass-panel">
+                    <div class="photo-info-content" id="photo-info-content">
+                        <div class="photo-date" id="photo-date">2026.02.09</div>
+                        <h3 class="photo-title" id="photo-title">鱼塘里的三花猫</h3>
+                        <p class="photo-desc" id="photo-desc">我猜它应该是吃腻了鱼肉，胡须上还有残渣。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="digital-section" id="digital">
+            <h2 class="section-title">Digital</h2>
+            <div class="digital-grid">
+                
+                <div class="digital-card glass-panel">
+                    <div class="digital-category">💻 筆記型電腦 | ROG Strix SCAR 18</div>
+                    <ul class="digital-items">
+                        <li>Intel® Core™ i9-13980HX Processor</li>
+                        <li>NVIDIA® GeForce RTX™ 4080 Laptop GPU</li>
+                    </ul>
+                </div>
+
+                <div class="digital-card glass-panel">
+                    <div class="digital-category">🖥️ 桌上型電腦 | DESKTOP</div>
+                    <ul class="digital-items">
+                        <li>AMD Ryzen™ 9 3900XT Processor</li>
+                        <li>AMD Radeon™ RX 6800 XT Graphics Card</li>
+                    </ul>
+                </div>
+                
+                <div class="digital-card glass-panel">
+                    <div class="digital-category">📱 手機 | Samsung Galaxy S23 Ultra</div>
+                    <ul class="digital-items">
+                        <li>Qualcomm® Snapdragon™ 8 Gen 2 for Galaxy</li>
+                    </ul>
+                </div>
+
+                <div class="digital-card glass-panel">
+                    <div class="digital-category">👓 頭戴式裝置 | Meta Quest 3</div>
+                    <ul class="digital-items">
+                        <li>Qualcomm® Snapdragon™ XR2 Gen 2</li>
+                    </ul>
+                </div>
+
+                <div class="digital-card glass-panel peripherals-card">
+                    <div class="digital-category">⚙️ 周边 | PERIPHERALS</div>
+                    <ul class="digital-items peripherals-grid">
+                        <li>🖱️ ROG Gladius III Wireless AimPoint</li>
+                        <li>⌨️ ROG Strix Scope RX ABS</li>
+                        <li>⌨️ ROG Strix Scope II RX PBT</li>
+                        <li>🎧 ROG Cetra II RGB</li>
+                        <li>🎧 ROG Delta S</li>
+                        <li>🎧 Surface Headphones 2</li>
+                        <li>🎧 Galaxy Buds2 Pro</li>
+                        <li>⌚ Galaxy Watch 4</li>
+                        <li>🎮 Xbox Wireless Controller</li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="final-section" id="final">
+            <h2 class="section-title">Final</h2>
+            <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 20px;">
+                <div style="font-family: SimSun, '宋体', serif; font-size: 1.6rem; letter-spacing: 2px; color: #eeeeee; line-height: 2.2; text-align: left; display: inline-block;">
+                    荷花也放了苞，<br>
+                    大概也要等你回来开，<br>
+                    一切都是为你。<br>
+                    <div style="text-align: right; margin-top: 20px; font-family: SimSun, '宋体', serif;">——闻一多</div>
+                </div>
+            </div>
+        </section>
+        </main>
+
+    <footer>
+        &copy; 2026 Ren Kobayashi (小林 然). All Rights Reserved.
+    </footer>
+
+    <div class="staggered-menu-wrapper" id="menu-wrapper" data-position="right">
+        <div class="sm-prelayers" aria-hidden="true">
+            <div class="sm-prelayer layer-1" style="background: rgba(140, 82, 255, 0.8)"></div>
+            <div class="sm-prelayer layer-2" style="background: rgba(0, 255, 208, 0.8)"></div>
+        </div>
+        
+        <button class="sm-toggle" type="button" aria-label="Toggle menu">
+            <span class="sm-toggle-textWrap" aria-hidden="true">
+                <span class="sm-toggle-textInner">
+                    <span class="sm-toggle-line">Menu</span>
+                    <span class="sm-toggle-line">Close</span>
+                </span>
+            </span>
+            <span class="sm-icon" aria-hidden="true">
+                <span class="sm-icon-line"></span>
+                <span class="sm-icon-line sm-icon-line-v"></span>
+            </span>
+        </button>
+        
+        <aside id="staggered-menu-panel" class="staggered-menu-panel">
+            <div class="sm-panel-inner">
+                <ul class="sm-panel-list" data-numbering="true">
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#home" data-index="1">
+                            <span class="sm-panel-itemLabel">首页</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#about" data-index="2">
+                            <span class="sm-panel-itemLabel">关于</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#projects" data-index="3">
+                            <span class="sm-panel-itemLabel">项目</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#contact" data-index="4">
+                            <span class="sm-panel-itemLabel">联系方式</span>
+                        </a>
+                    </li>
+                    <li class="sm-panel-itemWrap">
+                        <a class="sm-panel-item" href="#photo" data-index="5">
+                            <span class="sm-panel-itemLabel">摄影</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const weatherWidget = document.getElementById('weather-widget');
+            const emojiEl = document.getElementById('weather-emoji');
+            const textEl = document.getElementById('weather-text');
+
+            async function fetchWeather() {
+                try {
+                    emojiEl.textContent = '⌛';
+                    textEl.textContent = '...';
+
+                    // 默认坐标：北京 (防止定位失败或被拒绝时有一个合理的默认值)
+                    let lat = 39.90;
+                    let lon = 116.40;
+
+                    // 尝试通过浏览器获取真实位置
+                    const getCoords = () => new Promise((resolve) => {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                pos => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+                                err => resolve({lat, lon}) 
+                            );
+                        } else {
+                            resolve({lat, lon});
+                        }
+                    });
+
+                    const coords = await getCoords();
+                    
+                    // 使用免费免 Key 的 Open-Meteo 接口
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true`);
+                    if (!res.ok) throw new Error('API Request Failed');
+                    
+                    const data = await res.json();
+                    const temp = Math.round(data.current_weather.temperature);
+                    const code = data.current_weather.weathercode;
+
+                    // WMO 国际气象组织天气代码 转 Emoji
+                    const wmoToEmoji = {
+                        0: '☀️',
+                        1: '🌤️', 2: '⛅', 3: '☁️',
+                        45: '🌫️', 48: '🌫️',
+                        51: '🌦️', 53: '🌦️', 55: '🌧️',
+                        61: '🌧️', 63: '🌧️', 65: '🌧️',
+                        71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
+                        80: '🌦️', 81: '🌧️', 82: '🌧️',
+                        85: '🌨️', 86: '🌨️',
+                        95: '⛈️', 96: '⛈️', 99: '🌩️'
+                    };
+
+                    emojiEl.textContent = wmoToEmoji[code] || '⛅';
+                    textEl.textContent = `${temp}°C`;
+
+                } catch (e) {
+                    console.error('获取天气失败:', e);
+                    emojiEl.textContent = '☁️';
+                    textEl.textContent = 'N/A';
+                }
+            }
+
+            fetchWeather();
+            // 点击可刷新天气
+            weatherWidget.addEventListener('click', fetchWeather);
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+                const titles = document.querySelectorAll('.section-title');
+                titles.forEach(el => {
+                    const text = el.innerText;
+                    el.innerHTML = '';
+                    text.split('').forEach(char => {
+                        const span = document.createElement('span');
+                        span.className = 'char';
+                        span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                        el.appendChild(span);
+                    });
+                    const charElements = el.querySelectorAll('.char');
+                    gsap.fromTo(charElements,
+                        { willChange: 'opacity, transform', opacity: 0, yPercent: 120, scaleY: 2.3, scaleX: 0.7, transformOrigin: '50% 0%' },
+                        { duration: 1, ease: 'back.inOut(2)', opacity: 1, yPercent: 0, scaleY: 1, scaleX: 1, stagger: 0.03, scrollTrigger: { trigger: el, start: 'center bottom+=50%', end: 'bottom bottom-=40%', scrub: true } }
+                    );
+                });
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const panels = document.querySelectorAll('.glass-panel');
+            const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+            const isFirefox = /Firefox/.test(navigator.userAgent);
+
+            /*
+             * Liquid Glass corner repair
+             * 1) Keep the original UI and all existing sections intact.
+             * 2) Use a neutral displacement-map background instead of black outside the rounded rect.
+             * Black corners in an SVG displacement map force the backdrop to shift at the top-left
+             * and create the visible square/angled artifact.
+             * 3) Generate one displacement map per panel using the panel's real width/height/radius,
+             * then clip the element with the same radius.
+             */
+            const getRadiusText = (el) => getComputedStyle(el).borderRadius || '24px';
+            const getTopLeftRadius = (el) => parseFloat(getComputedStyle(el).borderTopLeftRadius) || 24;
+
+            panels.forEach(el => {
+                const radiusText = getRadiusText(el);
+                el.style.clipPath = `inset(0 round ${radiusText})`;
+                el.style.webkitClipPath = `inset(0 round ${radiusText})`;
+                el.style.overflow = 'hidden';
+                el.style.isolation = 'isolate';
+                el.style.transform = 'translateZ(0)';
+                el.style.contain = 'paint';
+                el.style.background = 'rgba(255,255,255,0.05)';
+            });
+
+            if (isWebkit || isFirefox) return;
+
+            const test = document.createElement('div');
+            test.style.backdropFilter = 'url(#test-filter)';
+            if (!test.style.backdropFilter) return;
+
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svgContainer = document.createElement('div');
+            svgContainer.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+            document.body.appendChild(svgContainer);
+
+            const defsSvg = document.createElementNS(svgNS, 'svg');
+            defsSvg.setAttribute('xmlns', svgNS);
+            defsSvg.setAttribute('width', '0');
+            defsSvg.setAttribute('height', '0');
+            const defs = document.createElementNS(svgNS, 'defs');
+            defsSvg.appendChild(defs);
+            svgContainer.appendChild(defsSvg);
+
+            const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+            const makeDisplacementMap = (width, height, radius, uid) => {
+                const w = Math.max(1, Math.round(width));
+                const h = Math.max(1, Math.round(height));
+                const r = clamp(Math.round(radius), 0, Math.min(w, h) / 2);
+                const edge = Math.max(2, Math.min(w, h) * 0.035);
+                const innerW = Math.max(1, w - edge * 2);
+                const innerH = Math.max(1, h - edge * 2);
+                const innerR = clamp(r - edge, 0, r);
+                const redGradId = `lg-red-${uid}`;
+                const blueGradId = `lg-blue-${uid}`;
+                const clipId = `lg-clip-${uid}`;
+                const blurId = `lg-blur-${uid}`;
+
+                const svgContent = `
+                    <svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="${redGradId}" x1="100%" y1="0%" x2="0%" y2="0%">
+                                <stop offset="0%" stop-color="rgb(128,128,128)"/>
+                                <stop offset="100%" stop-color="rgb(255,0,0)"/>
+                            </linearGradient>
+                            <linearGradient id="${blueGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="rgb(128,128,128)"/>
+                                <stop offset="100%" stop-color="rgb(0,0,255)"/>
+                            </linearGradient>
+                            <clipPath id="${clipId}">
+                                <rect x="0" y="0" width="${w}" height="${h}" rx="${r}" ry="${r}"/>
+                            </clipPath>
+                            <filter id="${blurId}" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="11"/>
+                            </filter>
+                        </defs>
+                        <rect x="0" y="0" width="${w}" height="${h}" fill="rgb(128,128,128)"/>
+                        <g clip-path="url(#${clipId})">
+                            <rect x="0" y="0" width="${w}" height="${h}" fill="url(#${redGradId})"/>
+                            <rect x="0" y="0" width="${w}" height="${h}" fill="url(#${blueGradId})" style="mix-blend-mode:difference" opacity="0.88"/>
+                            <rect x="${edge}" y="${edge}" width="${innerW}" height="${innerH}" rx="${innerR}" ry="${innerR}" fill="rgb(128,128,128)" filter="url(#${blurId})"/>
+                        </g>
+                    </svg>`;
+
+                return `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+            };
+
+            const createFilterForPanel = (el, index) => {
+                const filterId = `fixed-liquid-glass-filter-${index}`;
+                const feImageId = `fixed-liquid-glass-map-${index}`;
+
+                const filter = document.createElementNS(svgNS, 'filter');
+                filter.setAttribute('id', filterId);
+                filter.setAttribute('filterUnits', 'objectBoundingBox');
+                filter.setAttribute('x', '0%');
+                filter.setAttribute('y', '0%');
+                filter.setAttribute('width', '100%');
+                filter.setAttribute('height', '100%');
+                filter.setAttribute('color-interpolation-filters', 'sRGB');
+                filter.innerHTML = `
+                    <feImage id="${feImageId}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map"/>
+                    <feDisplacementMap in="SourceGraphic" in2="map" scale="-30" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+                    <feGaussianBlur in="displaced" stdDeviation="0.35" result="softened"/>
+                    <feComposite in="softened" in2="SourceGraphic" operator="over"/>
+                `;
+                defs.appendChild(filter);
+
+                const updateMap = () => {
+                    const rect = el.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+                    const feImage = document.getElementById(feImageId);
+                    if (!feImage) return;
+                    const data = makeDisplacementMap(rect.width, rect.height, getTopLeftRadius(el), index);
+                    feImage.setAttribute('href', data);
+                    feImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', data);
+
+                    const radiusText = getRadiusText(el);
+                    el.style.clipPath = `inset(0 round ${radiusText})`;
+                    el.style.webkitClipPath = `inset(0 round ${radiusText})`;
+                };
+
+                el.style.backdropFilter = `blur(14px) saturate(140%) url(#${filterId})`;
+                el.style.webkitBackdropFilter = `blur(14px) saturate(140%) url(#${filterId})`;
+
+                updateMap();
+                const resizeObserver = new ResizeObserver(() => requestAnimationFrame(updateMap));
+                resizeObserver.observe(el);
+            };
+
+            panels.forEach(createFilterForPanel);
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const rows = document.querySelectorAll('.marquee-row');
+            rows.forEach((row, index) => {
+                row.innerHTML += row.innerHTML;
+                let progress = 0, speed = (index % 2 === 0) ? 0.4 : 0.6, isDown = false, startX;
+                const viewport = row.parentElement;
+                viewport.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX; });
+                window.addEventListener('mouseup', () => { isDown = false; });
+                window.addEventListener('mousemove', (e) => {
+                    if (!isDown) return; e.preventDefault();
+                    progress += (e.pageX - startX); startX = e.pageX;
+                });
+                viewport.addEventListener('touchstart', (e) => { isDown = true; startX = e.touches[0].pageX; }, {passive: true});
+                window.addEventListener('touchend', () => { isDown = false; });
+                window.addEventListener('touchmove', (e) => {
+                    if (!isDown) return;
+                    progress += (e.touches[0].pageX - startX); startX = e.touches[0].pageX;
+                }, {passive: true});
+
+                function animate() {
+                    if (!isDown) progress -= speed;
+                    const halfWidth = row.scrollWidth / 2;
+                    if (Math.abs(progress) >= halfWidth) progress += halfWidth;
+                    else if (progress > 0) progress -= halfWidth;
+                    row.style.transform = `translateX(${progress}px)`;
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.body.addEventListener('click', (e) => {
+                const badge = e.target.closest('.gaming-badge');
+                if (!badge) return;
+                const textToCopy = badge.getAttribute('data-clipboard');
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const idSpan = badge.querySelector('.badge-id');
+                    const originalText = idSpan.innerText;
+                    idSpan.innerText = '已复制!';
+                    idSpan.style.color = '#00ffd0';
+                    setTimeout(() => { idSpan.innerText = originalText; idSpan.style.color = ''; }, 2000);
+                }).catch(err => { console.error('Failed to copy text: ', err); });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const fig = document.getElementById('tilted-card');
+            const inner = document.getElementById('tilted-inner');
+            const cap = document.getElementById('tilted-caption');
+            const scaleOnHover = 1.05, rotateAmplitude = 14; 
+            const target = { rotX: 0, rotY: 0, scale: 1, x: 0, y: 0, op: 0, rotCap: 0 }, current = { rotX: 0, rotY: 0, scale: 1, x: 0, y: 0, op: 0, rotCap: 0 };
+            let lastY = 0;
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            if (!isMobile && fig) {
+                fig.addEventListener('mousemove', (e) => {
+                    const rect = fig.getBoundingClientRect();
+                    const offsetX = e.clientX - rect.left - rect.width / 2, offsetY = e.clientY - rect.top - rect.height / 2;
+                    target.rotX = (offsetY / (rect.height / 2)) * -rotateAmplitude;
+                    target.rotY = (offsetX / (rect.width / 2)) * rotateAmplitude;
+                    target.x = e.clientX - rect.left + 15; target.y = e.clientY - rect.top + 15;
+                    target.rotCap = -(offsetY - lastY) * 0.6; lastY = offsetY;
+                });
+                fig.addEventListener('mouseenter', () => { target.scale = scaleOnHover; target.op = 1; });
+                fig.addEventListener('mouseleave', () => { target.scale = 1; target.rotX = 0; target.rotY = 0; target.op = 0; target.rotCap = 0; });
+                function animate() {
+                    const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+                    const f = 0.12; 
+                    current.rotX = lerp(current.rotX, target.rotX, f); current.rotY = lerp(current.rotY, target.rotY, f);
+                    current.scale = lerp(current.scale, target.scale, f); current.x = lerp(current.x, target.x, f);
+                    current.y = lerp(current.y, target.y, f); current.op = lerp(current.op, target.op, f);
+                    current.rotCap = lerp(current.rotCap, target.rotCap, f);
+                    inner.style.transform = `scale(${current.scale}) rotateX(${current.rotX}deg) rotateY(${current.rotY}deg)`;
+                    cap.style.transform = `translate(${current.x}px, ${current.y}px) rotate(${current.rotCap}deg)`; cap.style.opacity = current.op;
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+        });
+    </script>
+
+    <script>
+        const textElement = document.getElementById('typing-text');
+        const textArray = ["Ren Kobayashi", "こばやし ぜん", "Digital Artist"];
+        let textIndex = 0, charIndex = 0, isDeleting = false;
+        function typeEffect() {
+            const currentText = textArray[textIndex];
+            if (isDeleting) {
+                textElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+                if (charIndex === 0) {
+                    isDeleting = false; textIndex = (textIndex + 1) % textArray.length;
+                    setTimeout(typeEffect, 500); 
+                } else setTimeout(typeEffect, 40);
+            } else {
+                textElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+                if (charIndex === currentText.length) {
+                    isDeleting = true; setTimeout(typeEffect, 2500);
+                } else setTimeout(typeEffect, 80 + Math.random() * 50);
+            }
+        }
+        setTimeout(typeEffect, 1000);
+    </script>
+
+    <script>
+        const dfConfig = {
+            dotRadius: 1.5, dotSpacing: 14, cursorRadius: 500, cursorForce: 0.1, bulgeOnly: true,
+            bulgeStrength: 67, glowRadius: 160, sparkle: false, waveAmplitude: 0,
+            gradientFrom: 'rgba(168, 85, 247, 0.35)', gradientTo: 'rgba(0, 255, 208, 0.25)' 
+        };
+        const dfCanvas = document.getElementById('dot-field-canvas'), dfCtx = dfCanvas.getContext('2d', { alpha: true }), dfGlow = document.getElementById('dot-field-glow');
+        let dfDots = [], dfSize = { w: 0, h: 0, offsetX: 0, offsetY: 0 }, dfGlowOpacity = 0, dfEngagement = 0, dfFrameCount = 0, dfResizeTimer;
+        const dfMouse = { x: -9999, y: -9999, prevX: -9999, prevY: -9999, speed: 0 };
+        function buildDots(w, h) {
+            const step = dfConfig.dotRadius + dfConfig.dotSpacing, cols = Math.floor(w / step), rows = Math.floor(h / step);
+            const padX = (w % step) / 2, padY = (h % step) / 2; dfDots = new Array(rows * cols);
+            let idx = 0;
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const ax = padX + col * step + step / 2, ay = padY + row * step + step / 2;
+                    dfDots[idx++] = { ax, ay, sx: ax, sy: ay, vx: 0, vy: 0, x: ax, y: ay };
+                }
+            }
+        }
+        function resizeDotField() {
+            const rect = dfCanvas.parentElement.getBoundingClientRect(), w = rect.width, h = rect.height, dpr = Math.min(window.devicePixelRatio || 1, 2);
+            dfCanvas.width = w * dpr; dfCanvas.height = h * dpr; dfCanvas.style.width = w + 'px'; dfCanvas.style.height = h + 'px';
+            dfCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            dfSize = { w, h, offsetX: rect.left + window.scrollX, offsetY: rect.top + window.scrollY };
+            buildDots(w, h);
+        }
+        window.addEventListener('resize', () => { clearTimeout(dfResizeTimer); dfResizeTimer = setTimeout(resizeDotField, 100); });
+        window.addEventListener('mousemove', (e) => { dfMouse.x = e.pageX - dfSize.offsetX; dfMouse.y = e.pageY - dfSize.offsetY; }, { passive: true });
+        setInterval(() => {
+            const dist = Math.sqrt((dfMouse.prevX - dfMouse.x) ** 2 + (dfMouse.prevY - dfMouse.y) ** 2);
+            dfMouse.speed += (dist - dfMouse.speed) * 0.5; if (dfMouse.speed < 0.001) dfMouse.speed = 0;
+            dfMouse.prevX = dfMouse.x; dfMouse.prevY = dfMouse.y;
+        }, 20);
+        function dfTick() {
+            dfFrameCount++;
+            const { w, h } = dfSize, targetEngagement = Math.min(dfMouse.speed / 5, 1);
+            dfEngagement += (targetEngagement - dfEngagement) * 0.06; if (dfEngagement < 0.001) dfEngagement = 0;
+            dfGlowOpacity += (dfEngagement - dfGlowOpacity) * 0.08;
+            if (dfGlow) { dfGlow.setAttribute('cx', dfMouse.x); dfGlow.setAttribute('cy', dfMouse.y); dfGlow.style.opacity = dfGlowOpacity; }
+            dfCtx.clearRect(0, 0, w, h);
+            const grad = dfCtx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, dfConfig.gradientFrom); grad.addColorStop(1, dfConfig.gradientTo);
+            dfCtx.fillStyle = grad;
+            const crSq = dfConfig.cursorRadius * dfConfig.cursorRadius, rad = dfConfig.dotRadius / 2, TWO_PI = Math.PI * 2;
+            dfCtx.beginPath();
+            for (let i = 0; i < dfDots.length; i++) {
+                const d = dfDots[i], dx = dfMouse.x - d.ax, dy = dfMouse.y - d.ay, distSq = dx * dx + dy * dy;
+                if (distSq < crSq && dfEngagement > 0.01) {
+                    const push = (1 - Math.sqrt(distSq) / dfConfig.cursorRadius) ** 2 * dfConfig.bulgeStrength * dfEngagement;
+                    const angle = Math.atan2(dy, dx);
+                    d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.15; d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.15;
+                } else {
+                    d.sx += (d.ax - d.sx) * 0.1; d.sy += (d.ay - d.sy) * 0.1;
+                }
+                dfCtx.moveTo(d.sx + rad, d.sy); dfCtx.arc(d.sx, d.sy, rad, 0, TWO_PI);
+            }
+            dfCtx.fill(); requestAnimationFrame(dfTick);
+        }
+        resizeDotField(); requestAnimationFrame(dfTick);
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        const MAX_COLORS = 8;
+        const vert = `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position, 1.0); }`;
+        const frag = `
+        #define MAX_COLORS ${MAX_COLORS}
+        uniform vec2 uCanvas; uniform float uTime; uniform float uSpeed; uniform vec2 uRot; uniform int uColorCount;
+        uniform vec3 uColors[MAX_COLORS]; uniform int uTransparent; uniform float uScale; uniform float uFrequency;
+        uniform float uWarpStrength; uniform vec2 uPointer; uniform float uMouseInfluence; uniform float uParallax;
+        uniform float uNoise; uniform int uIterations; uniform float uIntensity; uniform float uBandWidth; varying vec2 vUv;
+        void main() {
+          float t = uTime * uSpeed; vec2 p = vUv * 2.0 - 1.0; p += uPointer * uParallax * 0.1;
+          vec2 rp = vec2(p.x * uRot.x - p.y * uRot.y, p.x * uRot.y + p.y * uRot.x);
+          vec2 q = vec2(rp.x * (uCanvas.x / uCanvas.y), rp.y);
+          q /= max(uScale, 0.0001); q /= 0.5 + 0.2 * dot(q, q); q += 0.2 * cos(t) - 7.56;
+          q += (uPointer - rp) * uMouseInfluence * 0.2;
+          for (int j = 0; j < 5; j++) {
+              if (j >= uIterations - 1) break;
+              vec2 rr = sin(1.5 * (q.yx * uFrequency) + 2.0 * cos(q * uFrequency)); q += (rr - q) * 0.15;
+          }
+          vec3 col = vec3(0.0); float a = 1.0;
+          if (uColorCount > 0) {
+              vec2 s = q; vec3 sumCol = vec3(0.0); float cover = 0.0;
+              for (int i = 0; i < MAX_COLORS; ++i) {
+                    if (i >= uColorCount) break; s -= 0.01;
+                    vec2 r = sin(1.5 * (s.yx * uFrequency) + 2.0 * cos(s * uFrequency));
+                    float m0 = length(r + sin(5.0 * r.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+                    float kBelow = clamp(uWarpStrength, 0.0, 1.0), kMix = pow(kBelow, 0.3), gain = 1.0 + max(uWarpStrength - 1.0, 0.0);
+                    vec2 warped = s + (r - s) * kBelow * gain;
+                    float m1 = length(warped + sin(5.0 * warped.y * uFrequency - 3.0 * t + float(i)) / 4.0);
+                    float m = mix(m0, m1, kMix), w = 1.0 - exp(-uBandWidth / exp(uBandWidth * m));
+                    sumCol += uColors[i] * w; cover = max(cover, w);
+              }
+              col = clamp(sumCol, 0.0, 1.0); a = uTransparent > 0 ? cover : 1.0;
+          } else {
+              vec2 s = q;
+              for (int k = 0; k < 3; ++k) {
+                  s -= 0.01; vec2 r = sin(1.5 * (s.yx * uFrequency) + 2.0 * cos(s * uFrequency));
+                  float m0 = length(r + sin(5.0 * r.y * uFrequency - 3.0 * t + float(k)) / 4.0);
+                  float kBelow = clamp(uWarpStrength, 0.0, 1.0), kMix = pow(kBelow, 0.3), gain = 1.0 + max(uWarpStrength - 1.0, 0.0);
+                  vec2 warped = s + (r - s) * kBelow * gain;
+                  float m1 = length(warped + sin(5.0 * warped.y * uFrequency - 3.0 * t + float(k)) / 4.0);
+                  float m = mix(m0, m1, kMix); col[k] = 1.0 - exp(-uBandWidth / exp(uBandWidth * m));
+              }
+              a = uTransparent > 0 ? max(max(col.r, col.g), col.b) : 1.0;
+          }
+          col *= uIntensity;
+          if (uNoise > 0.0001) {
+            float n = fract(sin(dot(gl_FragCoord.xy + vec2(uTime), vec2(12.9898, 78.233))) * 43758.5453123);
+            col += (n - 0.5) * uNoise; col = clamp(col, 0.0, 1.0);
+          }
+          gl_FragColor = vec4((uTransparent > 0) ? col * a : col, a);
+        }`;
+        const container = document.getElementById('color-bends-container'), scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', alpha: true });
+        renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.setClearColor(0x000000, 0); 
+        container.appendChild(renderer.domElement);
+        const config = { rotation: 90, speed: 0.15, scale: 1, frequency: 1, warpStrength: 1, mouseInfluence: 1, parallax: 0.5, noise: 0.15, iterations: 1, intensity: 1.5, bandWidth: 6, transparent: true, colors: ['#0f0c29', '#302b63', '#240b36', '#00ffd0', '#8c52ff'] };
+        const uColorsArray = Array.from({ length: MAX_COLORS }, () => new THREE.Vector3(0, 0, 0)), rotRad = (config.rotation * Math.PI) / 180;
+        const material = new THREE.ShaderMaterial({ vertexShader: vert, fragmentShader: frag, uniforms: { uCanvas: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }, uTime: { value: 0 }, uSpeed: { value: config.speed }, uRot: { value: new THREE.Vector2(Math.cos(rotRad), Math.sin(rotRad)) }, uColorCount: { value: 0 }, uColors: { value: uColorsArray }, uTransparent: { value: config.transparent ? 1 : 0 }, uScale: { value: config.scale }, uFrequency: { value: config.frequency }, uWarpStrength: { value: config.warpStrength }, uPointer: { value: new THREE.Vector2(0, 0) }, uMouseInfluence: { value: config.mouseInfluence }, uParallax: { value: config.parallax }, uNoise: { value: config.noise }, uIterations: { value: config.iterations }, uIntensity: { value: config.intensity }, uBandWidth: { value: config.bandWidth } }, premultipliedAlpha: true, transparent: true });
+        function updateColors(hexColors) {
+            const toVec3 = hex => { const h = hex.replace('#', '').trim(), v = h.length === 3 ? [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)] : [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; return new THREE.Vector3(v[0] / 255, v[1] / 255, v[2] / 255); };
+            const arr = hexColors.filter(Boolean).slice(0, MAX_COLORS).map(toVec3);
+            for (let i = 0; i < MAX_COLORS; i++) { const vec = material.uniforms.uColors.value[i]; if (i < arr.length) vec.copy(arr[i]); else vec.set(0, 0, 0); }
+            material.uniforms.uColorCount.value = arr.length;
+        }
+        updateColors(config.colors); scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material));
+        function handleResize() { const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); material.uniforms.uCanvas.value.set(w, h); }
+        window.addEventListener('resize', handleResize); handleResize();
+        const pointerTarget = new THREE.Vector2(0, 0), pointerCurrent = new THREE.Vector2(0, 0), pointerSmooth = 8, clock = new THREE.Clock();
+        window.addEventListener('pointermove', (e) => { pointerTarget.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 - 1); });
+        function loop() { requestAnimationFrame(loop); material.uniforms.uTime.value = clock.elapsedTime; pointerCurrent.lerp(pointerTarget, Math.min(1, clock.getDelta() * pointerSmooth)); material.uniforms.uPointer.value.copy(pointerCurrent); renderer.render(scene, camera); }
+        loop();
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const menuWrapper = document.getElementById('menu-wrapper');
+            document.querySelector('.sm-toggle').addEventListener('click', () => { menuWrapper.classList.toggle('is-open'); });
+            document.querySelectorAll('.sm-panel-item').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); menuWrapper.classList.remove('is-open');
+                    const targetElement = document.querySelector(link.getAttribute('href'));
+                    if (targetElement) setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 400); 
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const track = document.getElementById('game-gallery-track');
+            if (!track) return;
+            track.innerHTML += track.innerHTML;
+            let progress = 0, speed = 0.5, isDown = false, startX, isHovering = false;
+            const viewport = track.parentElement;
+            track.addEventListener('mouseenter', () => isHovering = true); track.addEventListener('mouseleave', () => { isHovering = false; isDown = false; });
+            viewport.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX; });
+            window.addEventListener('mouseup', () => { isDown = false; });
+            window.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); progress += (e.pageX - startX); startX = e.pageX; });
+            viewport.addEventListener('touchstart', (e) => { isDown = true; startX = e.touches[0].pageX; }, {passive: true});
+            window.addEventListener('touchend', () => { isDown = false; });
+            window.addEventListener('touchmove', (e) => { if (!isDown) return; progress += (e.touches[0].pageX - startX); startX = e.touches[0].pageX; }, {passive: true});
+            function animateGallery() {
+                if (!isDown && !isHovering) progress -= speed; else if (!isDown && isHovering) progress -= speed * 0.2; 
+                const halfWidth = track.scrollWidth / 2;
+                if (Math.abs(progress) >= halfWidth) progress += halfWidth; else if (progress > 0) progress -= halfWidth;
+                track.style.transform = `translateX(${progress}px)`; requestAnimationFrame(animateGallery);
+            }
+            animateGallery();
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            function initScroll() {
+                document.querySelectorAll('.game-card').forEach(card => {
+                    const wrap = card.querySelector('.game-name-wrapper'); if (!wrap) return;
+                    let originalText = wrap.getAttribute('data-text');
+                    if (!originalText) {
+                        const nameSpan = wrap.querySelector('.game-name');
+                        if (nameSpan) { originalText = nameSpan.innerText; wrap.setAttribute('data-text', originalText); }
+                    }
+                    wrap.innerHTML = `<span class="game-name">${originalText}</span>`; wrap.classList.remove('is-overflow');
+                    if (wrap.querySelector('.game-name').scrollWidth - wrap.clientWidth > 0) {
+                        wrap.classList.add('is-overflow');
+                        wrap.innerHTML = `<div class="marquee-inner"><span class="game-name" style="margin-right: 30px;">${originalText}</span><span class="game-name" style="margin-right: 30px;">${originalText}</span></div>`;
+                        wrap.querySelector('.marquee-inner').style.animationDuration = `${wrap.querySelector('.marquee-inner').scrollWidth / 2 / 25}s`;
+                    }
+                });
+            }
+            setTimeout(initScroll, 500); window.addEventListener('resize', initScroll);
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const photoData = [
+                { date: '2026.02.09', title: '鱼塘里的三花猫', text: '我猜它应该是吃腻了鱼肉，胡须上还有残渣。', image: 'https://img.scdn.io/i/6a110d968498c_1779502486.webp' },
+                { date: '2026.02.09', title: '山水意境', text: '黑白滤镜的登山记录，亭台，远山，水墨重现。', image: 'https://img.scdn.io/i/6a110d9551253_1779502485.webp' },
+                { date: '2026.02.09', title: '不知名螺壳', text: '登山无聊，路上拣“喇叭油儿”，看中的就塞在手心里。', image: 'https://img.scdn.io/i/6a110d9496dd4_1779502484.webp' },
+                { date: '2026.02.09', title: '光束', text: '底下向上拍的时候，好奇是怎么让一根根细线亮起来的。', image: 'https://img.scdn.io/i/6a110d944dbea_1779502484.webp' },
+                { date: '2026.02.14', title: '双年会在北京展览馆', text: '苏味建筑满满，共产主义信念，还有和平鸽。', image: 'https://img.scdn.io/i/6a110d96d0a30_1779502486.webp' },
+                { date: '2026.02.14', title: '艺术家的装置', text: '不会操作，差点给人家作品转坏了，工作人员客气地告诉我是怎么用的，时间久了，旁边聚集几位老者，问我这个作品的含义，我侃侃而谈，可能把我当成了作者？', image: 'https://img.scdn.io/i/6a110d8ef225b_1779502478.webp' },
+                { date: '2026.02.17', title: '北京·龙潭庙会', text: '逛庙会也花钱，看向湖面，两只鹅组成了心形，我手忙脚乱拍下这一刻。', image: 'https://img.scdn.io/i/6a110d8f60e81_1779502479.webp' },
+                { date: '2026.02.17', title: '马·球', text: '庞然大物，无他，拍下。', image: 'https://img.scdn.io/i/6a110d8eab28b_1779502478.webp' },
+                { date: '2026.02.18', title: '打铁花', text: '过年的时候看到的一幕，近距离观看太壮观了。', image: 'https://img.scdn.io/i/6a110d93976ff_1779502483.webp' },
+                { date: '2026.03.19', title: '莫奈花园', text: '草房子面前摆了一盆老师的花，草房子是莫奈的，花是老师的。', image: 'https://img.scdn.io/i/6a110d92a4c7d_1779502482.webp' }
+            ];
+            const container = document.getElementById('photo-stack'), infoContent = document.getElementById('photo-info-content');
+            if(!container) return;
+            let cards = [];
+            photoData.forEach((data) => {
+                const card = document.createElement('div'); card.className = 'stack-card'; card.innerHTML = `<img src="${data.image}" alt="${data.title}">`;
+                card.dataset.rot = (Math.random() * 10 - 5).toFixed(2); container.appendChild(card); cards.push(card);
+            });
+            let stackOrder = photoData.map((_, i) => i);
+            function renderStack() {
+                cards.forEach((card, originalIndex) => {
+                    const pos = stackOrder.indexOf(originalIndex); if (pos === -1) return;
+                    card.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease';
+                    card.style.transform = `scale(${1 - pos * 0.06}) rotateZ(${pos * 4 + parseFloat(card.dataset.rot)}deg)`;
+                    card.style.zIndex = photoData.length - pos; card.style.opacity = pos < 4 ? 1 - pos * 0.15 : 0;
+                    card.style.pointerEvents = pos === 0 ? 'auto' : 'none';
+                });
+                const topData = photoData[stackOrder[0]];
+                infoContent.style.opacity = 0; infoContent.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    document.getElementById('photo-date').textContent = topData.date; document.getElementById('photo-title').textContent = topData.title;
+                    document.getElementById('photo-desc').textContent = topData.text; infoContent.style.opacity = 1; infoContent.style.transform = 'translateY(0)';
+                }, 300);
+            }
+            renderStack();
+            let isDragging = false, startX = 0, startY = 0, currentX = 0, currentY = 0;
+            container.addEventListener('pointerdown', (e) => {
+                const topCard = cards[stackOrder[0]]; if (e.target.closest('.stack-card') !== topCard) return;
+                isDragging = true; startX = e.clientX; startY = e.clientY; topCard.style.transition = 'none'; topCard.style.cursor = 'grabbing'; topCard.setPointerCapture(e.pointerId);
+            });
+            container.addEventListener('pointermove', (e) => {
+                if (!isDragging) return; e.preventDefault(); currentX = e.clientX - startX; currentY = e.clientY - startY;
+                const topCard = cards[stackOrder[0]];
+                topCard.style.transform = `translate(${currentX}px, ${currentY}px) rotateX(${Math.max(-60, Math.min(60, currentY * -0.6))}deg) rotateY(${Math.max(-60, Math.min(60, currentX * 0.6))}deg) rotateZ(${parseFloat(topCard.dataset.rot)}deg)`;
+            });
+            container.addEventListener('pointerup', (e) => {
+                if (!isDragging) return; isDragging = false; const topCard = cards[stackOrder[0]]; topCard.style.cursor = 'grab'; topCard.releasePointerCapture(e.pointerId);
+                if (Math.abs(currentX) > 100 || Math.abs(currentY) > 100) stackOrder.push(stackOrder.shift());
+                currentX = 0; currentY = 0; renderStack();
+            });
+            container.addEventListener('click', (e) => {
+                if (Math.abs(currentX) < 5 && Math.abs(currentY) < 5 && e.target.closest('.stack-card') === cards[stackOrder[0]]) { stackOrder.push(stackOrder.shift()); renderStack(); }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('falling-text-container');
+            const target = document.getElementById('falling-text-target');
+            const canvasContainer = document.getElementById('falling-text-canvas');
+            
+            if (!container || !target || !canvasContainer) return;
+
+            // 文本内容
+            const fullText = "我是一个ENFP，一个腼腆的无趣的，偏执的理性的。在数码的逻辑与艺术的感性之间，我安静地织造着那些破碎又完整的梦。";
+            
+            // 简单分词逻辑：将英文单词作为整体，汉字单个拆分，标点符号也单独拆分
+            const tokenize = (text) => text.match(/[a-zA-Z]+|[^a-zA-Z]/g).flatMap(s => s.match(/[a-zA-Z]+/) ? s : s.split(''));
+            
+            // 构建 HTML，给每个小块赋予 inline-block 用于获取初始位置
+            const createHTML = (text) => tokenize(text).map(t => `<span class="falling-word" style="display:inline-block; will-change: transform; font-family: SimSun, '宋体', serif;">${t === ' ' ? '&nbsp;' : t}</span>`).join('');
+            
+            target.innerHTML = createHTML(fullText);
+
+            let effectStarted = false;
+
+            container.addEventListener('click', () => {
+                if (effectStarted) return;
+                effectStarted = true;
+
+                // 隐藏居中的提示文字
+                const hint = document.getElementById('falling-hint');
+                if (hint) hint.style.opacity = '0';
+
+                // 提取 Matter.js 核心模块
+                const Engine = Matter.Engine,
+                      Render = Matter.Render,
+                      Runner = Matter.Runner,
+                      MouseConstraint = Matter.MouseConstraint,
+                      Mouse = Matter.Mouse,
+                      World = Matter.World,
+                      Bodies = Matter.Bodies;
+
+                const engine = Engine.create();
+                // 设置重力系数
+                engine.world.gravity.y = 1.2; 
+
+                const rect = container.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+
+                // 固定容器的高度，防止因为内部 span 变成 absolute 导致高度塌陷
+                container.style.height = `${height}px`;
+
+                // 创建物理世界画布（画布为透明，纯作交互使用）
+                const render = Render.create({
+                    element: canvasContainer,
+                    engine: engine,
+                    options: {
+                        width,
+                        height,
+                        background: 'transparent',
+                        wireframes: false
+                    }
+                });
+                
+                render.canvas.style.position = 'absolute';
+                render.canvas.style.top = '0';
+                render.canvas.style.left = '0';
+                render.canvas.style.pointerEvents = 'auto'; // 确保鼠标能拖拽
+
+                // 物理边界
+                const wallOptions = { isStatic: true, render: { fillStyle: 'transparent' } };
+                const floor = Bodies.rectangle(width / 2, height + 25, width, 50, wallOptions);
+                const leftWall = Bodies.rectangle(-25, height / 2, 50, height, wallOptions);
+                const rightWall = Bodies.rectangle(width + 25, height / 2, 50, height, wallOptions);
+                const ceiling = Bodies.rectangle(width / 2, -50, width, 50, wallOptions);
+
+                // 获取 DOM 中每个字的包围盒，并生成物理刚体
+                const wordSpans = target.querySelectorAll('.falling-word');
+                const wordBodies = Array.from(wordSpans).map(elem => {
+                    const spanRect = elem.getBoundingClientRect();
+                    
+                    // 计算以容器为基准的位置
+                    const x = spanRect.left - rect.left + spanRect.width / 2;
+                    const y = spanRect.top - rect.top + spanRect.height / 2;
+
+                    const body = Bodies.rectangle(x, y, spanRect.width, spanRect.height, {
+                        render: { fillStyle: 'transparent' },
+                        restitution: 0.8, // 弹性
+                        frictionAir: 0.01, // 空气阻力
+                        friction: 0.2 // 表面摩擦力
+                    });
+
+                    // 给予随机初始爆裂力度
+                    Matter.Body.setVelocity(body, {
+                        x: (Math.random() - 0.5) * 6,
+                        y: (Math.random() - 0.2) * 2
+                    });
+                    Matter.Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.1);
+
+                    return { elem, body };
+                });
+
+                // 为 DOM 元素打上脱离文档流样式的补丁，由物理引擎接管控制权
+                wordBodies.forEach(({ elem, body }) => {
+                    elem.style.width = `${body.bounds.max.x - body.bounds.min.x}px`;
+                    elem.style.height = `${body.bounds.max.y - body.bounds.min.y}px`;
+                    elem.style.position = 'absolute';
+                    elem.style.margin = '0';
+                });
+
+                // 添加鼠标拖拽约束支持
+                const mouse = Mouse.create(render.canvas);
+                const mouseConstraint = MouseConstraint.create(engine, {
+                    mouse: mouse,
+                    constraint: {
+                        stiffness: 0.2,
+                        render: { visible: false }
+                    }
+                });
+                render.mouse = mouse;
+
+                World.add(engine.world, [floor, leftWall, rightWall, ceiling, mouseConstraint, ...wordBodies.map(wb => wb.body)]);
+
+                const runner = Runner.create();
+                Runner.run(runner, engine);
+                Render.run(render);
+
+                // 通过 requestAnimationFrame 将刚体数据同步回真实 DOM 节点，营造视觉掉落
+                const updateLoop = () => {
+                    wordBodies.forEach(({ body, elem }) => {
+                        const { x, y } = body.position;
+                        elem.style.left = '0';
+                        elem.style.top = '0';
+                        elem.style.transform = `translate(${x - elem.offsetWidth / 2}px, ${y - elem.offsetHeight / 2}px) rotate(${body.angle}rad)`;
+                    });
+                    requestAnimationFrame(updateLoop);
+                };
+                updateLoop();
+            });
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1c1c7799c54e46349cc23295b5e08299","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1c1c7799c54e46349cc23295b5e08299","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
