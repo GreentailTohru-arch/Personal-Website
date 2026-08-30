@@ -1,6 +1,28 @@
 // 页面交互脚本（由原始 A.html 内联脚本拆分）
 
         document.addEventListener("DOMContentLoaded", () => {
+            const video = document.getElementById('home-video-background');
+            if (!video) return;
+            const source = 'assets/Fixed_static_camera_locked_tr.mp4';
+            video.src = source;
+
+            const startVideo = () => {
+                if (video.paused) video.play().catch(() => {});
+            };
+
+            video.addEventListener('loadedmetadata', startVideo, { once: true });
+
+            video.addEventListener('error', () => {
+                video.style.opacity = '0';
+            });
+
+            document.addEventListener('pagechange', event => {
+                if (event.detail?.page === 'home') startVideo();
+                else video.pause();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
             const weatherWidget = document.getElementById('weather-widget');
             const emojiEl = document.getElementById('weather-emoji');
             const textEl = document.getElementById('weather-text');
@@ -329,79 +351,179 @@
             }
         }
         setTimeout(typeEffect, 1000);
-    
-
-        const dfConfig = {
-            dotRadius: 1.5, dotSpacing: 14, cursorRadius: 500, cursorForce: 0.1, bulgeOnly: true,
-            bulgeStrength: 67, glowRadius: 160, sparkle: false, waveAmplitude: 0,
-            gradientFrom: 'rgba(168, 85, 247, 0.35)', gradientTo: 'rgba(0, 255, 208, 0.25)' 
-        };
-        const dfCanvas = document.getElementById('dot-field-canvas'), dfCtx = dfCanvas.getContext('2d', { alpha: true }), dfGlow = document.getElementById('dot-field-glow');
-        let dfDots = [], dfSize = { w: 0, h: 0, offsetX: 0, offsetY: 0 }, dfGlowOpacity = 0, dfEngagement = 0, dfFrameCount = 0, dfResizeTimer;
-        const dfMouse = { x: -9999, y: -9999, prevX: -9999, prevY: -9999, speed: 0 };
-        function buildDots(w, h) {
-            const step = dfConfig.dotRadius + dfConfig.dotSpacing, cols = Math.floor(w / step), rows = Math.floor(h / step);
-            const padX = (w % step) / 2, padY = (h % step) / 2; dfDots = new Array(rows * cols);
-            let idx = 0;
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                    const ax = padX + col * step + step / 2, ay = padY + row * step + step / 2;
-                    dfDots[idx++] = { ax, ay, sx: ax, sy: ay, vx: 0, vy: 0, x: ax, y: ay };
-                }
-            }
-        }
-        function resizeDotField() {
-            const rect = dfCanvas.parentElement.getBoundingClientRect(), w = rect.width, h = rect.height, dpr = Math.min(window.devicePixelRatio || 1, 2);
-            dfCanvas.width = w * dpr; dfCanvas.height = h * dpr; dfCanvas.style.width = w + 'px'; dfCanvas.style.height = h + 'px';
-            dfCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            dfSize = { w, h, offsetX: rect.left + window.scrollX, offsetY: rect.top + window.scrollY };
-            buildDots(w, h);
-        }
-        window.addEventListener('resize', () => { clearTimeout(dfResizeTimer); dfResizeTimer = setTimeout(resizeDotField, 100); });
-        window.addEventListener('mousemove', (e) => { dfMouse.x = e.pageX - dfSize.offsetX; dfMouse.y = e.pageY - dfSize.offsetY; }, { passive: true });
-        setInterval(() => {
-            const dist = Math.sqrt((dfMouse.prevX - dfMouse.x) ** 2 + (dfMouse.prevY - dfMouse.y) ** 2);
-            dfMouse.speed += (dist - dfMouse.speed) * 0.5; if (dfMouse.speed < 0.001) dfMouse.speed = 0;
-            dfMouse.prevX = dfMouse.x; dfMouse.prevY = dfMouse.y;
-        }, 20);
-        function dfTick() {
-            dfFrameCount++;
-            const { w, h } = dfSize, targetEngagement = Math.min(dfMouse.speed / 5, 1);
-            dfEngagement += (targetEngagement - dfEngagement) * 0.06; if (dfEngagement < 0.001) dfEngagement = 0;
-            dfGlowOpacity += (dfEngagement - dfGlowOpacity) * 0.08;
-            if (dfGlow) { dfGlow.setAttribute('cx', dfMouse.x); dfGlow.setAttribute('cy', dfMouse.y); dfGlow.style.opacity = dfGlowOpacity; }
-            dfCtx.clearRect(0, 0, w, h);
-            const grad = dfCtx.createLinearGradient(0, 0, w, h);
-            grad.addColorStop(0, dfConfig.gradientFrom); grad.addColorStop(1, dfConfig.gradientTo);
-            dfCtx.fillStyle = grad;
-            const crSq = dfConfig.cursorRadius * dfConfig.cursorRadius, rad = dfConfig.dotRadius / 2, TWO_PI = Math.PI * 2;
-            dfCtx.beginPath();
-            for (let i = 0; i < dfDots.length; i++) {
-                const d = dfDots[i], dx = dfMouse.x - d.ax, dy = dfMouse.y - d.ay, distSq = dx * dx + dy * dy;
-                if (distSq < crSq && dfEngagement > 0.01) {
-                    const push = (1 - Math.sqrt(distSq) / dfConfig.cursorRadius) ** 2 * dfConfig.bulgeStrength * dfEngagement;
-                    const angle = Math.atan2(dy, dx);
-                    d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.15; d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.15;
-                } else {
-                    d.sx += (d.ax - d.sx) * 0.1; d.sy += (d.ay - d.sy) * 0.1;
-                }
-                dfCtx.moveTo(d.sx + rad, d.sy); dfCtx.arc(d.sx, d.sy, rad, 0, TWO_PI);
-            }
-            dfCtx.fill(); requestAnimationFrame(dfTick);
-        }
-        resizeDotField(); requestAnimationFrame(dfTick);
-    
-
         document.addEventListener("DOMContentLoaded", () => {
-            const menuWrapper = document.getElementById('menu-wrapper');
-            document.querySelector('.sm-toggle').addEventListener('click', () => { menuWrapper.classList.toggle('is-open'); });
-            document.querySelectorAll('.sm-panel-item').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault(); menuWrapper.classList.remove('is-open');
-                    const targetElement = document.querySelector(link.getAttribute('href'));
-                    if (targetElement) setTimeout(() => { targetElement.scrollIntoView({ behavior: 'smooth' }); }, 400); 
+            const nav = document.getElementById('pill-nav');
+            const mobileToggle = document.getElementById('pill-mobile-toggle');
+            const mobileMenu = document.getElementById('pill-mobile-menu');
+            const menuLinks = [...document.querySelectorAll('.pill, .mobile-menu-link')];
+            const scrollHint = document.querySelector('.scroll-hint');
+            const pageAliases = { home: 'home', about: 'about', projects: 'projects', contact: 'contact', photo: 'photo', digital: 'about', play: 'projects', final: 'photo' };
+            const projectCards = [...document.querySelectorAll('.post-card[data-project-index]')];
+            const projectPagination = document.getElementById('posts-pagination');
+            const projectPrev = document.getElementById('posts-page-prev');
+            const projectNext = document.getElementById('posts-page-next');
+            const projectStatus = document.getElementById('posts-page-status');
+            const projectsPerPage = 5;
+            let currentProjectPage = 1;
+            let projectAnimationToken = 0;
+            const totalProjectPages = Math.max(1, Math.ceil(projectCards.length / projectsPerPage));
+
+            const renderProjectPage = page => {
+                currentProjectPage = Math.max(1, Math.min(totalProjectPages, page));
+                const firstIndex = (currentProjectPage - 1) * projectsPerPage;
+                const animationToken = ++projectAnimationToken;
+                projectCards.forEach((card, index) => {
+                    card.hidden = true;
+                    card.classList.remove('project-card-enter');
+                });
+                const visibleCards = projectCards.slice(firstIndex, firstIndex + projectsPerPage);
+                window.requestAnimationFrame(() => {
+                    visibleCards.forEach((card, index) => {
+                        card.style.setProperty('--project-delay', `${index * 100}ms`);
+                        card.hidden = false;
+                        card.classList.add('project-card-enter');
+                        card.addEventListener('animationend', () => {
+                            if (animationToken === projectAnimationToken) card.classList.remove('project-card-enter');
+                        }, { once: true });
+                    });
+                });
+                if (projectStatus) projectStatus.textContent = `${currentProjectPage} / ${totalProjectPages}`;
+                if (projectPrev) projectPrev.disabled = currentProjectPage === 1;
+                if (projectNext) projectNext.disabled = currentProjectPage === totalProjectPages;
+                if (projectPagination) projectPagination.hidden = totalProjectPages <= 1;
+            };
+
+            renderProjectPage(1);
+            projectPrev?.addEventListener('click', () => renderProjectPage(currentProjectPage - 1));
+            projectNext?.addEventListener('click', () => renderProjectPage(currentProjectPage + 1));
+
+            const pageFromHash = hash => {
+                const key = String(hash || '').replace(/^#/, '').toLowerCase();
+                return pageAliases[key] || 'home';
+            };
+
+            const setPage = (page, { updateHistory = true } = {}) => {
+                const nextPage = pageAliases[page] || 'home';
+                document.body.dataset.page = nextPage;
+                menuLinks.forEach(link => {
+                    const linkPage = pageFromHash(link.getAttribute('href'));
+                    const active = linkPage === nextPage;
+                    link.classList.toggle('is-active', active);
+                    if (active) link.setAttribute('aria-current', 'page');
+                    else link.removeAttribute('aria-current');
+                });
+                if (updateHistory && window.location.hash !== `#${nextPage}`) {
+                    history.pushState({ page: nextPage }, '', `#${nextPage}`);
+                }
+                window.dispatchEvent(new Event('resize'));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.dispatchEvent(new CustomEvent('pagechange', { detail: { page: nextPage } }));
+            };
+
+            const pills = [...document.querySelectorAll('.pill')];
+            const pillTimelines = pills.map(pill => {
+                const circle = pill.querySelector('.hover-circle');
+                const label = pill.querySelector('.pill-label');
+                const hoverLabel = pill.querySelector('.pill-label-hover');
+                if (!circle || typeof gsap === 'undefined') return null;
+                const layout = () => {
+                    const rect = pill.getBoundingClientRect();
+                    const radius = ((rect.width * rect.width) / 4 + rect.height * rect.height) / (2 * rect.height);
+                    const diameter = Math.ceil(2 * radius) + 2;
+                    const delta = Math.ceil(radius - Math.sqrt(Math.max(0, radius * radius - (rect.width * rect.width) / 4))) + 1;
+                    circle.style.width = `${diameter}px`;
+                    circle.style.height = `${diameter}px`;
+                    circle.style.bottom = `-${delta}px`;
+                    gsap.set(circle, { xPercent: -50, scale: 0, transformOrigin: `50% ${diameter - delta}px` });
+                    if (label) gsap.set(label, { y: 0 });
+                    if (hoverLabel) gsap.set(hoverLabel, { y: rect.height + 12, opacity: 0 });
+                };
+                layout();
+                return { circle, label, hoverLabel, layout };
+            });
+
+            pills.forEach((pill, index) => {
+                pill.addEventListener('mouseenter', () => {
+                    const parts = pillTimelines[index];
+                    if (!parts || typeof gsap === 'undefined') return;
+                    const height = pill.getBoundingClientRect().height;
+                    gsap.to(parts.circle, { scale: 1.2, duration: 0.3, ease: 'power2.out', overwrite: true });
+                    if (parts.label) gsap.to(parts.label, { y: -(height + 8), duration: 0.3, ease: 'power2.out', overwrite: true });
+                    if (parts.hoverLabel) gsap.to(parts.hoverLabel, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', overwrite: true });
+                });
+                pill.addEventListener('mouseleave', () => {
+                    const parts = pillTimelines[index];
+                    if (!parts || typeof gsap === 'undefined') return;
+                    gsap.to(parts.circle, { scale: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
+                    if (parts.label) gsap.to(parts.label, { y: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
+                    if (parts.hoverLabel) gsap.to(parts.hoverLabel, { y: pill.getBoundingClientRect().height + 12, opacity: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
                 });
             });
+
+            const logo = document.querySelector('.pill-logo img');
+            if (logo && typeof gsap !== 'undefined') {
+                logo.parentElement.addEventListener('mouseenter', () => gsap.to(logo, { rotate: 360, duration: 0.2, ease: 'power2.out', overwrite: true }));
+                logo.parentElement.addEventListener('mouseleave', () => gsap.set(logo, { rotate: 0 }));
+            }
+
+            const navItems = document.querySelector('.pill-nav-items');
+            if (typeof gsap !== 'undefined') {
+                if (logo) {
+                    gsap.set(logo.parentElement, { scale: 0 });
+                    gsap.to(logo.parentElement, { scale: 1, duration: 0.6, ease: 'power2.out' });
+                }
+                if (navItems) {
+                    gsap.set(navItems, { width: 0, overflow: 'hidden' });
+                    gsap.to(navItems, { width: 'auto', duration: 0.6, ease: 'power2.out' });
+                }
+            }
+
+            menuLinks.forEach(link => {
+                link.addEventListener('click', event => {
+                    event.preventDefault();
+                    const nextPage = pageFromHash(link.getAttribute('href'));
+                    setMobileMenu(false);
+                    setPage(nextPage);
+                });
+            });
+
+            let mobileOpen = false;
+            const setMobileMenu = open => {
+                mobileOpen = open;
+                if (!mobileToggle || !mobileMenu) return;
+                mobileToggle.setAttribute('aria-expanded', String(open));
+                mobileToggle.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+                const lines = mobileToggle.querySelectorAll('.hamburger-line');
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(lines[0], { rotation: open ? 45 : 0, y: open ? 3 : 0, duration: 0.25, ease: 'power2.out' });
+                    gsap.to(lines[1], { rotation: open ? -45 : 0, y: open ? -3 : 0, duration: 0.25, ease: 'power2.out' });
+                    if (open) {
+                        gsap.set(mobileMenu, { visibility: 'visible' });
+                        gsap.fromTo(mobileMenu, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: 'power2.out' });
+                    } else {
+                        gsap.to(mobileMenu, { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out', onComplete: () => gsap.set(mobileMenu, { visibility: 'hidden' }) });
+                    }
+                } else {
+                    mobileMenu.style.visibility = open ? 'visible' : 'hidden';
+                    mobileMenu.style.opacity = open ? '1' : '0';
+                }
+            };
+
+            if (mobileToggle) mobileToggle.addEventListener('click', () => setMobileMenu(!mobileOpen));
+
+            if (scrollHint) {
+                scrollHint.addEventListener('click', () => setPage('about'));
+                scrollHint.setAttribute('role', 'link');
+                scrollHint.setAttribute('tabindex', '0');
+                scrollHint.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setPage('about'); }
+                });
+            }
+
+            window.addEventListener('hashchange', () => setPage(pageFromHash(window.location.hash), { updateHistory: false }));
+            window.addEventListener('popstate', () => setPage(pageFromHash(window.location.hash), { updateHistory: false }));
+            window.addEventListener('resize', () => pillTimelines.forEach(parts => parts?.layout()));
+            setPage(pageFromHash(window.location.hash), { updateHistory: false });
         });
     
 

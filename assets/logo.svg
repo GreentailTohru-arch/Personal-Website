@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Ren Kobayashi</title>
+  <rect width="64" height="64" rx="16" fill="#000"/>
+  <path d="M17 46V18h12.4c8.4 0 13.1 4 13.1 10.6 0 4.4-2.1 7.5-6 9.1L44 46h-7.2l-6.1-7.9h-7.1V46H17Zm6.6-13.5h5.4c3.9 0 6.1-1.9 6.1-5.4s-2.2-5.3-6.1-5.3h-5.4v10.7Z" fill="#fff"/>
+  <path d="M46 18v28h-5.9V18H46Z" fill="#00ffd0"/>
+</svg>

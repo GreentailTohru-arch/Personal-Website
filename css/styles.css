@@ -27,24 +27,6 @@
             margin: 0;
         }
 
-        /* ----- 最底层：DotField 粒子点阵背景 (-20) ----- */
-        #dot-field-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -20;
-            pointer-events: none;
-            background-color: #000000;
-        }
-        #dot-field-canvas, #dot-field-svg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-        }
-
         /* ----- 中间层：Color Bends 流体渐变背景 (-10) ----- */
         #color-bends-container {
             position: fixed;
@@ -54,6 +36,31 @@
             height: 100vh;
             z-index: -10;
             pointer-events: none;
+        }
+
+        #home-video-background {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -5;
+            object-fit: cover;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            background: #050505;
+            filter: brightness(0.62) saturate(1.08);
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+
+        body.page-mode[data-page="home"] #home-video-background {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        body.page-mode[data-page="home"] #color-bends-container {
+            opacity: 0;
+            visibility: hidden;
         }
 
         /* ================= 新增：左上角天气小组件样式 ================= */
@@ -73,10 +80,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 22px;
-            font-size: 1.05rem;
+            height: 42px;
+            padding: 0 18px;
+            font-size: 16px;
             font-weight: 600;
             letter-spacing: 1px;
+            border-radius: 999px;
             transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
             user-select: none;
         }
@@ -303,84 +312,117 @@
         .posts-list {
             display: flex;
             flex-direction: column;
-            gap: 60px;
+            gap: 44px;
         }
 
         .post-card {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 50px 45px;
+            padding: 44px 30px;
             text-decoration: none;
             color: var(--text-main);
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: border-color 0.28s ease, color 0.28s ease;
         }
 
-        .post-card::before {
-            content: '';
-            position: absolute;
-            top: -45%;
-            left: -70%;
-            width: 42%;
-            height: 190%;
-            border-radius: 999px;
-            pointer-events: none;
-            opacity: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.075), transparent);
-            filter: blur(18px);
-            transform: translateX(-120%) rotate(12deg);
-            transition: transform 0.75s ease, opacity 0.45s ease;
-            will-change: transform, opacity;
+        .post-card[hidden] {
+            display: none;
+        }
+
+        .post-card.project-card-enter {
+            animation: project-card-in 0.7s cubic-bezier(0.22, 1.2, 0.36, 1) var(--project-delay, 0ms) both;
+        }
+
+        @keyframes project-card-in {
+            0% { opacity: 0; transform: translateY(24px) scale(0.97); }
+            68% { opacity: 1; transform: translateY(-4px) scale(1.01); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .post-card:hover {
-            transform: translateY(-8px);
+            transform: none;
             border-color: var(--card-hover-border);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 208, 0.15);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .post-card:hover::before {
-            opacity: 1;
-            transform: translateX(520%) rotate(12deg);
+            background: transparent;
+            color: var(--text-main);
         }
 
         .post-info {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .post-title {
-            font-size: 2.2rem;
+            font-size: 1.7rem;
             font-weight: 700;
         }
 
         .post-title span {
-            font-size: 1.3rem; 
+            font-size: 1rem;
             color: var(--text-muted);
             font-weight: 400;
-            display: block; 
-            margin-left: 0; 
-            margin-top: 8px; 
+            display: block;
+            margin-left: 0;
+            margin-top: 6px;
         }
 
         .post-date {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: rgba(0, 255, 208, 0.8);
             letter-spacing: 1px;
         }
 
         .arrow {
-            font-size: 3rem;
+            font-size: 2rem;
             color: var(--text-muted);
             transition: transform 0.3s ease, color 0.3s ease;
         }
 
         .post-card:hover .arrow {
-            transform: translateX(12px);
+            transform: none;
+            color: var(--text-muted);
+        }
+
+        .posts-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .posts-page-button {
+            min-width: 42px;
+            height: 38px;
+            padding: 0 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            font: inherit;
+            cursor: pointer;
+            transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+        }
+
+        .posts-page-button:hover:not(:disabled) {
+            border-color: var(--card-hover-border);
+            background: rgba(0, 255, 208, 0.1);
             color: #00ffd0;
+            transform: translateY(-2px);
+        }
+
+        .posts-page-button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .posts-page-status {
+            min-width: 48px;
+            color: var(--text-muted);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            text-align: center;
         }
 
         /* --- 胶囊按钮拖拽滚动与简介样式 --- */
@@ -428,7 +470,7 @@
             border: 1px solid var(--card-border);
             color: #fff;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
             font-size: 0.95rem;
             user-select: none;
             white-space: nowrap;
@@ -437,8 +479,16 @@
         .gaming-badge:hover {
             background: rgba(255, 255, 255, 0.12);
             border-color: var(--card-hover-border);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 208, 0.15);
+            transform: none;
+            box-shadow:
+                0 0 8px rgba(0, 255, 208, 0.32),
+                0 0 20px rgba(0, 255, 208, 0.2),
+                0 0 38px rgba(0, 255, 208, 0.12);
+        }
+
+        .contact-section .gaming-badge:hover,
+        .play-section .gaming-badge:hover {
+            transform: none !important;
         }
 
         .gaming-badge svg {
@@ -709,11 +759,12 @@
             .post-card {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 25px;
-                padding: 35px 25px;
+                gap: 28px;
+                padding: 36px 22px;
             }
             .arrow { align-self: flex-end; }
-            .post-title span { display: block; margin-left: 0; margin-top: 8px; }
+            .post-title { font-size: 1.4rem; }
+            .post-title span { display: block; margin-left: 0; margin-top: 4px; }
             
             .gaming-badge {
                 padding: 8px 14px;
@@ -736,7 +787,8 @@
             .weather-widget {
                 top: 20px;
                 left: 20px;
-                padding: 10px 16px;
+                height: 42px;
+                padding: 0 16px;
             }
         }
 
@@ -996,5 +1048,64 @@
             .sm-toggle { top: 20px; right: 20px; }
             .sm-panel-item { font-size: 2.5rem; }
             .staggered-menu-panel { padding: 40px; }
+        }
+
+        /* ================= 单页视图切换 ================= */
+        body.page-mode {
+            min-height: 100vh;
+            scroll-behavior: smooth;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body.page-mode main {
+            min-height: calc(100vh - 80px);
+            padding-top: 120px;
+            padding-bottom: 80px;
+            gap: 80px;
+        }
+
+        body.page-mode main > section {
+            scroll-margin-top: 100px;
+        }
+
+        body.page-mode header#home,
+        body.page-mode main > section {
+            display: none;
+        }
+
+        body.page-mode[data-page="home"] header#home,
+        body.page-mode[data-page="about"] #about,
+        body.page-mode[data-page="projects"] #projects,
+        body.page-mode[data-page="contact"] #contact,
+        body.page-mode[data-page="contact"] #play,
+        body.page-mode[data-page="photo"] #photo,
+        body.page-mode[data-page="photo"] #digital,
+        body.page-mode[data-page="photo"] #final {
+            display: block;
+            animation: page-view-in 1.05s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+            will-change: opacity, transform;
+        }
+
+        body.page-mode[data-page="home"] header#home {
+            display: flex;
+        }
+
+        body.page-mode .scroll-hint {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        @keyframes page-view-in {
+            0% { opacity: 0; transform: translateY(34px) scale(0.96); }
+            62% { opacity: 1; transform: translateY(-7px) scale(1.01); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (max-width: 600px) {
+            body.page-mode main {
+                padding-top: 100px;
+                padding-bottom: 50px;
+            }
         }
     

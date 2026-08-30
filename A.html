@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ren Kobayashi | 小林 然 - Digital Art Portfolio</title>
-        <link rel="stylesheet" href="css/styles.css">
+    <title>REN DESIGN STUDIO</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png" sizes="256x256">
+    <link rel="shortcut icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/glass-surface.css">
+    <link rel="stylesheet" href="css/pill-nav.css">
 
     <script type="importmap">
         {
@@ -18,22 +22,11 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 </head>
-<body>
-
-    <div id="dot-field-container">
-        <canvas id="dot-field-canvas"></canvas>
-        <svg id="dot-field-svg" style="pointer-events: none;">
-            <defs>
-                <radialGradient id="dot-field-glow-grad">
-                    <stop offset="0%" stop-color="rgba(140, 82, 255, 0.15)" />
-                    <stop offset="100%" stop-color="transparent" />
-                </radialGradient>
-            </defs>
-            <circle id="dot-field-glow" cx="-9999" cy="-9999" r="160" fill="url(#dot-field-glow-grad)" style="opacity: 0; will-change: opacity;" />
-        </svg>
-    </div>
+<body class="page-mode" data-page="home">
 
     <div id="color-bends-container"></div>
+
+    <video id="home-video-background" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
 
     <div class="weather-widget" id="weather-widget" title="点击刷新天气">
         <span class="weather-emoji" id="weather-emoji">⛅</span>
@@ -41,11 +34,11 @@
     </div>
     <header id="home">
         <h1>小林 然 | <span id="typing-text"></span><span class="typing-cursor">|</span></h1>
-        <div class="subtitle">New Media Art & IxD</div>
+        <div class="subtitle">REN DESIGN STUDIO</div>
         <div class="tags">
-            <span class="tag">新媒体艺术</span>
-            <span class="tag">数字艺术爱好者</span>
-            <span class="tag">游戏玩家</span>
+            <span class="tag">新媒体艺术家</span>
+            <span class="tag">设计师</span>
+            <span class="tag">全栈工程师</span>
         </div>
         <div class="scroll-hint">
             Scroll To Explore
@@ -75,7 +68,7 @@
         <section class="posts-section" id="projects">
             <h2 class="section-title">Posts</h2>
             <div class="posts-list">
-                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare2.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare2.html" target="_blank" class="post-card glass-panel" data-project-index="0">
                     <div class="post-info">
                         <div class="post-title">Geometric Warfare 2 <span>几何战争 2</span></div>
                         <div class="post-date">2026.05.25</div>
@@ -83,7 +76,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel" data-project-index="1">
                     <div class="post-info">
                         <div class="post-title">Point Cloud VFX Lab <span>点云动效实验室</span></div>
                         <div class="post-date">2026.05.21</div>
@@ -91,7 +84,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel" data-project-index="2">
                     <div class="post-info">
                         <div class="post-title">Geometric Warfare <span>几何战争</span></div>
                         <div class="post-date">2026.05.15</div>
@@ -99,7 +92,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel" data-project-index="3">
                     <div class="post-info">
                         <div class="post-title">Cultural Relics Display Case <span>文物展示台</span></div>
                         <div class="post-date">2026.05.01</div>
@@ -107,7 +100,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel" data-project-index="4">
                     <div class="post-info">
                         <div class="post-title">Answering Questions & Engraving <span>新媒体互动技术结课作业</span></div>
                         <div class="post-date">2026.04.26</div>
@@ -115,13 +108,18 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel">
+                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel" data-project-index="5">
                     <div class="post-info">
                         <div class="post-title">Alpha <span>初次尝试</span></div>
                         <div class="post-date">2025.12.02</div>
                     </div>
                     <div class="arrow">→</div>
                 </a>
+            </div>
+            <div class="posts-pagination" id="posts-pagination" aria-label="项目分页" hidden>
+                <button type="button" class="posts-page-button" id="posts-page-prev" aria-label="上一页">←</button>
+                <span class="posts-page-status" id="posts-page-status" aria-live="polite">1 / 1</span>
+                <button type="button" class="posts-page-button posts-page-next" id="posts-page-next" aria-label="下一页">→</button>
             </div>
         </section>
 
@@ -144,25 +142,25 @@
                 <div class="badge-group">
                     <div class="marquee-viewport">
                         <div class="marquee-row" id="marquee-row-contact">
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
                                 <span class="badge-platform">X</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path></svg>
                                 <span class="badge-platform">Telegram</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10.5c.338 .25 .61 .515 .815 .794c.333 .45 .515 .93 .515 1.403c0 .247 -.043 .477 -.126 .689l-1.204 3.114a1 1 0 0 1 -1.41 .545l-3.32 -1.66a1 1 0 0 0 -.894 0l-3.32 1.66a1 1 0 0 1 -1.41 -.545l-1.204 -3.114a1.996 1.996 0 0 1 -.126 -.69c0 -.472 .182 -.952 .515 -1.402a2.97 2.97 0 0 1 .815 -.794a4.996 4.996 0 0 1 2.185 -.5c.813 0 1.562 .185 2.185 .5zm10 .5a4.996 4.996 0 0 0 -2.185 -.5c-.813 0 -1.562 .185 -2.185 .5a2.97 2.97 0 0 0 -.815 .794c-.333 .45 -.515 .93 -.515 1.403c0 .247 .043 .477 .126 .689l1.204 3.114a1 1 0 0 0 1.41 .545l3.32 -1.66a1 1 0 0 1 .894 0l3.32 1.66a1 1 0 0 0 1.41 -.545l1.204 -3.114c.083 -.212 .126 -.442 .126 -.69c0 -.472 -.182 -.952 -.515 -1.402a2.97 2.97 0 0 0 -.815 -.794z"></path></svg>
                                 <span class="badge-platform">Wechat</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="2"></rect><path d="M7 6l2.3 2.8"></path><path d="M17 6l-2.3 2.8"></path><line x1="9" y1="13" x2="9" y2="13.01"></line><line x1="15" y1="13" x2="15" y2="13.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>
                                 <span class="badge-platform">Bilibili</span>
                                 <span class="badge-divider">·</span>
@@ -174,7 +172,7 @@
             </div>
         </section>
 
-        <section class="play-section">
+        <section class="play-section" id="play">
             <h2 class="section-title">Play with me</h2>
 
             <div class="game-gallery-viewport">
@@ -243,25 +241,25 @@
                 <div class="badge-group">
                     <div class="marquee-viewport">
                         <div class="marquee-row" id="marquee-row-1">
-                            <div class="gaming-badge" data-clipboard="greentail_tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="greentail_tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Discord</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">greentail_tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Cthm2020">
+                            <div class="gaming-badge glass-surface" data-clipboard="Cthm2020">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Steam</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Cthm2020</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">PlayStation</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="小林卜一ル#1579">
+                            <div class="gaming-badge glass-surface" data-clipboard="小林卜一ル#1579">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Xbox</span>
                                 <span class="badge-divider">·</span>
@@ -272,55 +270,55 @@
 
                     <div class="marquee-viewport">
                         <div class="marquee-row" id="marquee-row-2">
-                            <div class="gaming-badge" data-clipboard="Cthm#31979">
+                            <div class="gaming-badge glass-surface" data-clipboard="Cthm#31979">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Battle.net</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Cthm#31979</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">EA App</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Epic Games</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">GOG</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Kindred_Krul">
+                            <div class="gaming-badge glass-surface" data-clipboard="Kindred_Krul">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Rockstar Games</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Kindred_Krul</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Ubisoft</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Minecraft</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentail_Tohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentailtohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentailtohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Google Play Games</span>
                                 <span class="badge-divider">·</span>
                                 <span class="badge-id">Greentailtohru</span>
                             </div>
-                            <div class="gaming-badge" data-clipboard="Greentail_Tohru">
+                            <div class="gaming-badge glass-surface" data-clipboard="Greentail_Tohru">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
                                 <span class="badge-platform">Apple Game Center</span>
                                 <span class="badge-divider">·</span>
@@ -417,56 +415,38 @@
         &copy; 2026 Ren Kobayashi (小林 然). All Rights Reserved.
     </footer>
 
-    <div class="staggered-menu-wrapper" id="menu-wrapper" data-position="right">
-        <div class="sm-prelayers" aria-hidden="true">
-            <div class="sm-prelayer layer-1" style="background: rgba(140, 82, 255, 0.8)"></div>
-            <div class="sm-prelayer layer-2" style="background: rgba(0, 255, 208, 0.8)"></div>
-        </div>
+    <div class="pill-nav-container" id="pill-nav-container">
+        <nav class="pill-nav custom-nav" id="pill-nav" aria-label="主导航"
+            style="--base: #000000; --pill-bg: #ffffff; --hover-text: #ffffff; --pill-text: #000000;">
+            <a class="pill-logo" href="#home" aria-label="返回首页">
+                <img src="assets/logo.svg" alt="Ren Kobayashi Logo">
+            </a>
 
-        <button class="sm-toggle" type="button" aria-label="Toggle menu">
-            <span class="sm-toggle-textWrap" aria-hidden="true">
-                <span class="sm-toggle-textInner">
-                    <span class="sm-toggle-line">Menu</span>
-                    <span class="sm-toggle-line">Close</span>
-                </span>
-            </span>
-            <span class="sm-icon" aria-hidden="true">
-                <span class="sm-icon-line"></span>
-                <span class="sm-icon-line sm-icon-line-v"></span>
-            </span>
-        </button>
-
-        <aside id="staggered-menu-panel" class="staggered-menu-panel">
-            <div class="sm-panel-inner">
-                <ul class="sm-panel-list" data-numbering="true">
-                    <li class="sm-panel-itemWrap">
-                        <a class="sm-panel-item" href="#home" data-index="1">
-                            <span class="sm-panel-itemLabel">首页</span>
-                        </a>
-                    </li>
-                    <li class="sm-panel-itemWrap">
-                        <a class="sm-panel-item" href="#about" data-index="2">
-                            <span class="sm-panel-itemLabel">关于</span>
-                        </a>
-                    </li>
-                    <li class="sm-panel-itemWrap">
-                        <a class="sm-panel-item" href="#projects" data-index="3">
-                            <span class="sm-panel-itemLabel">项目</span>
-                        </a>
-                    </li>
-                    <li class="sm-panel-itemWrap">
-                        <a class="sm-panel-item" href="#contact" data-index="4">
-                            <span class="sm-panel-itemLabel">联系方式</span>
-                        </a>
-                    </li>
-                    <li class="sm-panel-itemWrap">
-                        <a class="sm-panel-item" href="#photo" data-index="5">
-                            <span class="sm-panel-itemLabel">摄影</span>
-                        </a>
-                    </li>
+            <div class="pill-nav-items desktop-only">
+                <ul class="pill-list" role="menubar">
+                    <li role="none"><a class="pill" href="#home" role="menuitem" aria-label="首页"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">首页</span><span class="pill-label-hover" aria-hidden="true">首页</span></span></a></li>
+                    <li role="none"><a class="pill" href="#about" role="menuitem" aria-label="关于"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">关于</span><span class="pill-label-hover" aria-hidden="true">关于</span></span></a></li>
+                    <li role="none"><a class="pill" href="#projects" role="menuitem" aria-label="项目"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">项目</span><span class="pill-label-hover" aria-hidden="true">项目</span></span></a></li>
+                    <li role="none"><a class="pill" href="#contact" role="menuitem" aria-label="联系方式"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">联系方式</span><span class="pill-label-hover" aria-hidden="true">联系方式</span></span></a></li>
+                    <li role="none"><a class="pill" href="#photo" role="menuitem" aria-label="摄影"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">摄影</span><span class="pill-label-hover" aria-hidden="true">摄影</span></span></a></li>
                 </ul>
             </div>
-        </aside>
+
+            <button class="mobile-menu-button mobile-only" id="pill-mobile-toggle" type="button" aria-label="打开菜单" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </nav>
+
+        <div class="mobile-menu-popover mobile-only" id="pill-mobile-menu" style="--base: #000000; --pill-bg: #ffffff; --hover-text: #ffffff; --pill-text: #000000;">
+            <ul class="mobile-menu-list">
+                <li><a class="mobile-menu-link" href="#home">首页</a></li>
+                <li><a class="mobile-menu-link" href="#about">关于</a></li>
+                <li><a class="mobile-menu-link" href="#projects">项目</a></li>
+                <li><a class="mobile-menu-link" href="#contact">联系方式</a></li>
+                <li><a class="mobile-menu-link" href="#photo">摄影</a></li>
+            </ul>
+        </div>
     </div>
 
 
@@ -499,6 +479,7 @@
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1c1c7799c54e46349cc23295b5e08299","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1c1c7799c54e46349cc23295b5e08299","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <script src="js/glass-surface.js"></script>
     <script src="js/main.js"></script>
     <script type="module" src="js/color-bends.js"></script>
 </body>
