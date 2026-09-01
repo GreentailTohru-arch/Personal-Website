@@ -159,3 +159,232 @@
     .desktop-only { display: none; }
     .mobile-only { display: flex; }
 }
+
+/* Reference-style header: brand / Logo2 / centered links / contact. */
+#pill-nav-container {
+    top: clamp(8px, 0.8vw, 16px);
+    left: clamp(20px, 2.7vw, 56px);
+    right: clamp(20px, 2.7vw, 56px);
+    width: auto;
+    transform: none;
+}
+
+#pill-nav {
+    width: 100%;
+    min-height: var(--nav-h);
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: center;
+    column-gap: clamp(8px, 1vw, 20px);
+    background: transparent;
+    font-family: "PingFangSCLight", "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
+}
+
+#pill-nav .nav-brand-name,
+#pill-nav .nav-contact,
+#pill-nav .pill {
+    color: #ffffff;
+    font-family: "PingFangSCLight", "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-weight: 300;
+    text-decoration: none;
+}
+
+#pill-nav .nav-brand-name {
+    grid-column: 1 / 3;
+    display: inline-flex;
+    align-items: center;
+    font-size: clamp(18px, 1.35vw, 34px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+#pill-nav .nav-logo2 {
+    grid-column: 3 / 5;
+    justify-self: start;
+    width: clamp(42px, 2.8vw, 72px);
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#pill-nav .nav-logo2 img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#pill-nav .pill-nav-items {
+    grid-column: 6 / 11;
+    justify-self: center;
+    width: auto !important;
+    height: auto;
+    min-width: 0;
+    overflow: visible !important;
+    background: transparent;
+    border-radius: 0;
+}
+
+#pill-nav .pill-list {
+    height: auto;
+    padding: 0;
+    gap: clamp(18px, 2.1vw, 48px);
+    align-items: center;
+}
+
+#pill-nav .pill-list > li {
+    height: auto;
+}
+
+#pill-nav .pill {
+    height: auto;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    font-size: clamp(16px, 1.12vw, 28px);
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: visible;
+    transition: opacity 0.2s ease;
+}
+
+#pill-nav .pill:hover,
+#pill-nav .nav-brand-name:hover,
+#pill-nav .nav-contact:hover {
+    opacity: 0.68;
+}
+
+#pill-nav .pill:hover,
+#pill-nav .pill.is-active,
+#pill-nav .nav-contact:hover,
+#pill-mobile-menu .mobile-menu-link:hover,
+#pill-mobile-menu .mobile-menu-link.is-active {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+}
+
+#pill-nav .pill .hover-circle,
+#pill-nav .pill .pill-label-hover,
+#pill-nav .pill.is-active::after {
+    display: none !important;
+}
+
+#pill-nav .pill.is-active {
+    text-decoration: none;
+}
+
+#pill-nav .pill.is-active::after {
+    display: block !important;
+    bottom: -0.38em;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    transform: none;
+    background: #ffffff;
+    border-radius: 0;
+}
+
+#pill-nav .pill:hover:not(.is-active) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+}
+
+#pill-nav .pill .label-stack,
+#pill-nav .pill .pill-label {
+    line-height: 1.2;
+}
+
+#pill-nav .nav-contact {
+    grid-column: 11 / 13;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    font-size: clamp(18px, 1.35vw, 34px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+body.page-mode[data-page="home"] .weather-widget {
+    top: clamp(72px, 5.8vw, 104px);
+}
+
+/* 暂时隐藏天气组件，保留原有结构便于后续恢复。 */
+.weather-widget {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    #pill-nav-container {
+        top: 8px;
+        left: 20px;
+        right: 20px;
+        width: auto;
+    }
+
+    #pill-nav .desktop-only {
+        display: none !important;
+    }
+
+    #pill-nav {
+        display: flex;
+        width: 100%;
+        min-height: 42px;
+        padding: 0;
+        gap: 0;
+    }
+
+    #pill-nav .nav-brand-name {
+        font-size: 18px;
+    }
+
+    #pill-nav .nav-logo2 {
+        width: 44px;
+        margin-left: auto;
+        margin-right: 12px;
+    }
+
+    #pill-nav .mobile-menu-button {
+        display: flex;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        background: rgba(0, 0, 0, 0.22);
+    }
+
+    #pill-nav .hamburger-line {
+        background: #ffffff;
+    }
+
+    #pill-mobile-menu {
+        top: 54px;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 18px;
+        backdrop-filter: blur(18px);
+    }
+
+    #pill-mobile-menu .mobile-menu-link {
+        font-family: "PingFangSCLight", "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
+        font-weight: 300;
+    }
+
+    body.page-mode[data-page="home"] .weather-widget {
+        top: 72px;
+        left: 20px;
+    }
+}

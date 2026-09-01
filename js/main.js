@@ -1,25 +1,209 @@
 // 页面交互脚本（由原始 A.html 内联脚本拆分）
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const video = document.getElementById('home-video-background');
-            if (!video) return;
-            const source = 'assets/Fixed_static_camera_locked_tr.mp4';
-            video.src = source;
+        (() => {
+            const root = document.documentElement;
+            const body = document.body;
+            const preloader = document.getElementById('site-preloader');
+            if (!root || !body || !preloader) {
+                root?.classList.remove('is-preloading');
+                body?.classList.remove('is-preloading');
+                return;
+            }
 
-            const startVideo = () => {
-                if (video.paused) video.play().catch(() => {});
+            const finishPreloader = () => {
+                root.classList.remove('is-preloading');
+                body.classList.remove('is-preloading');
+                preloader.classList.add('is-complete');
             };
 
-            video.addEventListener('loadedmetadata', startVideo, { once: true });
+            if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+                finishPreloader();
+                return;
+            }
 
-            video.addEventListener('error', () => {
-                video.style.opacity = '0';
+            let finished = false;
+            const finishOnce = () => {
+                if (finished) return;
+                finished = true;
+                finishPreloader();
+            };
+
+            preloader.addEventListener('transitionend', event => {
+                if (event.target === preloader && event.propertyName === 'opacity') finishOnce();
             });
 
-            document.addEventListener('pagechange', event => {
-                if (event.detail?.page === 'home') startVideo();
-                else video.pause();
+            window.requestAnimationFrame(() => preloader.classList.add('is-intro'));
+            window.setTimeout(() => {
+                preloader.classList.remove('is-intro');
+                preloader.classList.add('is-exiting');
+            }, 1250);
+            window.setTimeout(finishOnce, 2200);
+        })();
+
+        (() => {
+            const root = document.documentElement;
+            const body = document.body;
+            if (!root || !body) return;
+
+            const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+            if (reduceMotion?.matches) return;
+
+            root.classList.add('has-momentum-scroll');
+
+            let targetScroll = window.scrollY;
+            let currentScroll = targetScroll;
+            let animationFrame = 0;
+            let writingScroll = false;
+
+            const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+            const getMaxScroll = () => Math.max(0, root.scrollHeight - window.innerHeight);
+
+            const writeScroll = value => {
+                writingScroll = true;
+                window.scrollTo(0, value);
+                window.requestAnimationFrame(() => { writingScroll = false; });
+            };
+
+            const animateScroll = () => {
+                const maxScroll = getMaxScroll();
+                targetScroll = clamp(targetScroll, 0, maxScroll);
+                currentScroll += (targetScroll - currentScroll) * 0.12;
+
+                if (Math.abs(targetScroll - currentScroll) < 0.45) {
+                    currentScroll = targetScroll;
+                    writeScroll(currentScroll);
+                    animationFrame = 0;
+                    return;
+                }
+
+                writeScroll(currentScroll);
+                animationFrame = window.requestAnimationFrame(animateScroll);
+            };
+
+            const startScrollAnimation = () => {
+                if (!animationFrame) animationFrame = window.requestAnimationFrame(animateScroll);
+            };
+
+            const normalizeWheelDelta = event => {
+                let delta = event.deltaY;
+                if (event.deltaMode === 1) delta *= 16;
+                if (event.deltaMode === 2) delta *= window.innerHeight;
+                return delta;
+            };
+
+            const isNativeScrollTarget = target => target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"], [data-native-scroll]');
+
+            window.addEventListener('wheel', event => {
+                if (body.classList.contains('is-preloading')) {
+                    event.preventDefault();
+                    return;
+                }
+                if (event.ctrlKey || isNativeScrollTarget(event.target)) return;
+
+                const delta = normalizeWheelDelta(event);
+                const maxScroll = getMaxScroll();
+                if (!delta || maxScroll <= 0) return;
+
+                event.preventDefault();
+                targetScroll = clamp(targetScroll + delta, 0, maxScroll);
+                startScrollAnimation();
+            }, { passive: false });
+
+            window.addEventListener('scroll', () => {
+                if (writingScroll) return;
+                const nativeScroll = window.scrollY;
+                targetScroll = nativeScroll;
+                currentScroll = nativeScroll;
+                if (animationFrame) {
+                    window.cancelAnimationFrame(animationFrame);
+                    animationFrame = 0;
+                }
+            }, { passive: true });
+
+            window.scrollToWithMomentum = (position = 0, { immediate = false } = {}) => {
+                targetScroll = clamp(Number(position) || 0, 0, getMaxScroll());
+                if (immediate) {
+                    if (animationFrame) {
+                        window.cancelAnimationFrame(animationFrame);
+                        animationFrame = 0;
+                    }
+                    currentScroll = targetScroll;
+                    writeScroll(currentScroll);
+                    return;
+                }
+                startScrollAnimation();
+            };
+        })();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            const video = document.getElementById('home-video-background');
+            const model = document.getElementById('home-model-background');
+            if (!body || (!video && !model)) return;
+
+            const videoSource = 'assets/Fixed_static_camera_locked_tr.mp4';
+            const modelSource = model?.dataset.src || '';
+            const supportedBackgrounds = new Set(['rainy-store', 'video', 'color-bends']);
+            let videoSourceAttached = false;
+            let modelMounted = false;
+
+            const startVideo = () => {
+                if (!video) return;
+                if (!videoSourceAttached) {
+                    video.src = videoSource;
+                    videoSourceAttached = true;
+                }
+                const play = () => video.play().catch(() => {});
+                if (video.readyState >= 1) play();
+                else video.addEventListener('loadedmetadata', play, { once: true });
+            };
+
+            const mountModel = () => {
+                if (!model || modelMounted || !modelSource) return;
+                model.src = modelSource;
+                modelMounted = true;
+            };
+
+            const unmountModel = () => {
+                if (!model || !modelMounted) return;
+                model.src = 'about:blank';
+                modelMounted = false;
+            };
+
+            const syncBackgroundPlayback = () => {
+                const isHome = body.dataset.page === 'home';
+                const background = body.dataset.background || 'rainy-store';
+                const modelActive = isHome && background === 'rainy-store';
+                const videoActive = isHome && background === 'video';
+
+                if (modelActive) mountModel();
+                else unmountModel();
+
+                if (videoActive) startVideo();
+                else video?.pause();
+            };
+
+            window.setHomeBackground = background => {
+                if (!supportedBackgrounds.has(background)) {
+                    console.warn(`Unsupported home background: ${background}`);
+                    return;
+                }
+                body.dataset.background = background;
+                syncBackgroundPlayback();
+                document.dispatchEvent(new CustomEvent('backgroundchange', { detail: { background } }));
+            };
+
+            video?.addEventListener('error', () => {
+                if (body.dataset.background === 'video') window.setHomeBackground('color-bends');
             });
+
+            model?.addEventListener('error', () => {
+                if (body.dataset.background === 'rainy-store') window.setHomeBackground('color-bends');
+            });
+
+            document.addEventListener('pagechange', syncBackgroundPlayback);
+            document.addEventListener('backgroundchange', syncBackgroundPlayback);
+            syncBackgroundPlayback();
         });
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -331,7 +515,7 @@
     
 
         const textElement = document.getElementById('typing-text');
-        const textArray = ["Ren Kobayashi", "こばやし ぜん", "Digital Artist"];
+        const textArray = ["Ren Kobayashi", "こばやし ぜん"];
         let textIndex = 0, charIndex = 0, isDeleting = false;
         function typeEffect() {
             const currentText = textArray[textIndex];
@@ -357,7 +541,7 @@
             const mobileMenu = document.getElementById('pill-mobile-menu');
             const menuLinks = [...document.querySelectorAll('.pill, .mobile-menu-link')];
             const scrollHint = document.querySelector('.scroll-hint');
-            const pageAliases = { home: 'home', about: 'about', projects: 'projects', contact: 'contact', photo: 'photo', digital: 'about', play: 'projects', final: 'photo' };
+            const pageAliases = { home: 'home', about: 'about', blog: 'blog', work: 'projects', projects: 'projects', contact: 'contact', photo: 'photo', digital: 'about', play: 'projects', final: 'photo' };
             const projectCards = [...document.querySelectorAll('.post-card[data-project-index]')];
             const projectPagination = document.getElementById('posts-pagination');
             const projectPrev = document.getElementById('posts-page-prev');
@@ -399,72 +583,86 @@
 
             const pageFromHash = hash => {
                 const key = String(hash || '').replace(/^#/, '').toLowerCase();
-                return pageAliases[key] || 'home';
+                return pageAliases[key] ? key : 'home';
             };
 
             const setPage = (page, { updateHistory = true } = {}) => {
-                const nextPage = pageAliases[page] || 'home';
+                const routeKey = pageFromHash(page);
+                const nextPage = pageAliases[routeKey] || 'home';
+                const activeRouteKey = routeKey === 'projects' ? 'work' : routeKey;
                 document.body.dataset.page = nextPage;
                 menuLinks.forEach(link => {
                     const linkPage = pageFromHash(link.getAttribute('href'));
-                    const active = linkPage === nextPage;
+                    const active = linkPage === activeRouteKey;
                     link.classList.toggle('is-active', active);
                     if (active) link.setAttribute('aria-current', 'page');
                     else link.removeAttribute('aria-current');
                 });
-                if (updateHistory && window.location.hash !== `#${nextPage}`) {
-                    history.pushState({ page: nextPage }, '', `#${nextPage}`);
+                if (updateHistory && window.location.hash !== `#${routeKey}`) {
+                    history.pushState({ page: routeKey }, '', `#${routeKey}`);
                 }
                 window.dispatchEvent(new Event('resize'));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                document.dispatchEvent(new CustomEvent('pagechange', { detail: { page: nextPage } }));
+                if (typeof window.scrollToWithMomentum === 'function') window.scrollToWithMomentum(0);
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.dispatchEvent(new CustomEvent('pagechange', { detail: { page: nextPage, route: routeKey } }));
             };
 
-            const pills = [...document.querySelectorAll('.pill')];
-            const pillTimelines = pills.map(pill => {
-                const circle = pill.querySelector('.hover-circle');
-                const label = pill.querySelector('.pill-label');
-                const hoverLabel = pill.querySelector('.pill-label-hover');
-                if (!circle || typeof gsap === 'undefined') return null;
-                const layout = () => {
-                    const rect = pill.getBoundingClientRect();
-                    const radius = ((rect.width * rect.width) / 4 + rect.height * rect.height) / (2 * rect.height);
-                    const diameter = Math.ceil(2 * radius) + 2;
-                    const delta = Math.ceil(radius - Math.sqrt(Math.max(0, radius * radius - (rect.width * rect.width) / 4))) + 1;
-                    circle.style.width = `${diameter}px`;
-                    circle.style.height = `${diameter}px`;
-                    circle.style.bottom = `-${delta}px`;
-                    gsap.set(circle, { xPercent: -50, scale: 0, transformOrigin: `50% ${diameter - delta}px` });
-                    if (label) gsap.set(label, { y: 0 });
-                    if (hoverLabel) gsap.set(hoverLabel, { y: rect.height + 12, opacity: 0 });
+            const navShuffleCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const navShuffleState = new WeakMap();
+
+            const restoreNavText = element => {
+                const state = navShuffleState.get(element);
+                if (!state) return;
+                state.token += 1;
+                if (state.frame) cancelAnimationFrame(state.frame);
+                element.textContent = state.original;
+                element.removeAttribute('aria-label');
+            };
+
+            const shuffleNavText = element => {
+                const original = element.dataset.originalText || element.textContent;
+                const state = navShuffleState.get(element) || { original, token: 0, frame: 0 };
+                state.original = original;
+                state.token += 1;
+                const token = state.token;
+                navShuffleState.set(element, state);
+                element.dataset.originalText = original;
+                element.setAttribute('aria-label', original);
+                if (state.frame) cancelAnimationFrame(state.frame);
+
+                const startedAt = performance.now();
+                const animate = now => {
+                    const current = navShuffleState.get(element);
+                    if (!current || current.token !== token) return;
+                    const progress = Math.min(1, (now - startedAt) / 250);
+                    const lockedCharacters = Math.floor(progress * original.length);
+                    element.textContent = [...original].map((character, index) => {
+                        if (/\s/.test(character) || index < lockedCharacters || progress >= 1) return character;
+                        return navShuffleCharacters[Math.floor(Math.random() * navShuffleCharacters.length)];
+                    }).join('');
+
+                    if (progress < 1) {
+                        current.frame = requestAnimationFrame(animate);
+                    } else {
+                        element.textContent = original;
+                        element.removeAttribute('aria-label');
+                    }
                 };
-                layout();
-                return { circle, label, hoverLabel, layout };
+
+                state.frame = requestAnimationFrame(animate);
+            };
+
+            const navShuffleTargets = [...document.querySelectorAll('[data-hover-shuffle]')];
+            navShuffleTargets.forEach(element => {
+                element.addEventListener('mouseenter', () => shuffleNavText(element));
+                element.addEventListener('mouseleave', () => restoreNavText(element));
+                element.addEventListener('focusin', () => shuffleNavText(element));
+                element.addEventListener('focusout', () => restoreNavText(element));
             });
 
-            pills.forEach((pill, index) => {
-                pill.addEventListener('mouseenter', () => {
-                    const parts = pillTimelines[index];
-                    if (!parts || typeof gsap === 'undefined') return;
-                    const height = pill.getBoundingClientRect().height;
-                    gsap.to(parts.circle, { scale: 1.2, duration: 0.3, ease: 'power2.out', overwrite: true });
-                    if (parts.label) gsap.to(parts.label, { y: -(height + 8), duration: 0.3, ease: 'power2.out', overwrite: true });
-                    if (parts.hoverLabel) gsap.to(parts.hoverLabel, { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', overwrite: true });
-                });
-                pill.addEventListener('mouseleave', () => {
-                    const parts = pillTimelines[index];
-                    if (!parts || typeof gsap === 'undefined') return;
-                    gsap.to(parts.circle, { scale: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
-                    if (parts.label) gsap.to(parts.label, { y: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
-                    if (parts.hoverLabel) gsap.to(parts.hoverLabel, { y: pill.getBoundingClientRect().height + 12, opacity: 0, duration: 0.2, ease: 'power2.out', overwrite: true });
-                });
-            });
+            const pillTimelines = [];
 
             const logo = document.querySelector('.pill-logo img');
-            if (logo && typeof gsap !== 'undefined') {
-                logo.parentElement.addEventListener('mouseenter', () => gsap.to(logo, { rotate: 360, duration: 0.2, ease: 'power2.out', overwrite: true }));
-                logo.parentElement.addEventListener('mouseleave', () => gsap.set(logo, { rotate: 0 }));
-            }
 
             const navItems = document.querySelector('.pill-nav-items');
             if (typeof gsap !== 'undefined') {
@@ -492,7 +690,7 @@
                 mobileOpen = open;
                 if (!mobileToggle || !mobileMenu) return;
                 mobileToggle.setAttribute('aria-expanded', String(open));
-                mobileToggle.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+                mobileToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
                 const lines = mobileToggle.querySelectorAll('.hamburger-line');
                 if (typeof gsap !== 'undefined') {
                     gsap.to(lines[0], { rotation: open ? 45 : 0, y: open ? 3 : 0, duration: 0.25, ease: 'power2.out' });
@@ -526,6 +724,255 @@
             setPage(pageFromHash(window.location.hash), { updateHistory: false });
         });
     
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const output = document.getElementById('blog-markdown-output');
+            if (!output) return;
+
+            const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[character]));
+
+            const safeUrl = value => {
+                const url = String(value || '').trim();
+                return /^(https?:\/\/|\/|\.\/|assets\/|#)/i.test(url) ? url : '#';
+            };
+
+            const parseFrontMatter = source => {
+                const normalized = String(source || '').replace(/\r\n?/g, '\n').trim();
+                const match = normalized.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+                if (!match) return { metadata: {}, markdown: normalized };
+
+                const metadata = {};
+                match[1].split('\n').forEach(line => {
+                    const separator = line.indexOf(':');
+                    if (separator < 0) return;
+                    const key = line.slice(0, separator).trim();
+                    const value = line.slice(separator + 1).trim();
+                    if (key) metadata[key] = value;
+                });
+                return { metadata, markdown: match[2].trim() };
+            };
+
+            const renderInline = value => {
+                let html = escapeHtml(value);
+                html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, alt, url, title) => {
+                    const safeTitle = title ? ` title="${escapeHtml(title)}"` : '';
+                    return `<img class="markdown-inline-image" src="${escapeHtml(safeUrl(url))}" alt="${escapeHtml(alt)}"${safeTitle} loading="lazy">`;
+                });
+                html = html.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, label, url, title) => {
+                    const safeTitle = title ? ` title="${escapeHtml(title)}"` : '';
+                    return `<a href="${escapeHtml(safeUrl(url))}"${safeTitle} target="_blank" rel="noreferrer">${label}</a>`;
+                });
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+                html = html.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+                return html;
+            };
+
+            const renderMarkdown = markdown => {
+                const lines = String(markdown || '').replace(/\r\n?/g, '\n').split('\n');
+                const blocks = [];
+                let paragraph = [];
+                let listType = '';
+                let listItems = [];
+                let quoteLines = [];
+                let codeLanguage = '';
+                let codeLines = null;
+
+                const flushParagraph = () => {
+                    if (!paragraph.length) return;
+                    blocks.push(`<p>${renderInline(paragraph.join('\n'))}</p>`);
+                    paragraph = [];
+                };
+
+                const flushList = () => {
+                    if (!listItems.length) return;
+                    const tag = listType === 'ol' ? 'ol' : 'ul';
+                    blocks.push(`<${tag}>${listItems.map(item => `<li>${renderInline(item)}</li>`).join('')}</${tag}>`);
+                    listType = '';
+                    listItems = [];
+                };
+
+                const flushQuote = () => {
+                    if (!quoteLines.length) return;
+                    blocks.push(`<blockquote>${renderInline(quoteLines.join('\n'))}</blockquote>`);
+                    quoteLines = [];
+                };
+
+                const flushOpenBlocks = () => {
+                    flushParagraph();
+                    flushList();
+                    flushQuote();
+                };
+
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+
+                    if (codeLines) {
+                        if (/^```/.test(trimmed)) {
+                            const languageClass = codeLanguage ? ` class="language-${escapeHtml(codeLanguage)}"` : '';
+                            blocks.push(`<pre><code${languageClass}>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+                            codeLanguage = '';
+                            codeLines = null;
+                        } else {
+                            codeLines.push(line);
+                        }
+                        return;
+                    }
+
+                    if (/^```/.test(trimmed)) {
+                        flushOpenBlocks();
+                        codeLanguage = trimmed.slice(3).trim();
+                        codeLines = [];
+                        return;
+                    }
+
+                    if (!trimmed) {
+                        flushOpenBlocks();
+                        return;
+                    }
+
+                    const imageMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$/);
+                    if (imageMatch) {
+                        flushOpenBlocks();
+                        const alt = escapeHtml(imageMatch[1]);
+                        const caption = escapeHtml(imageMatch[3] || imageMatch[1]);
+                        blocks.push(`<figure class="markdown-figure"><img src="${escapeHtml(safeUrl(imageMatch[2]))}" alt="${alt}" loading="lazy"><figcaption>${caption}</figcaption></figure>`);
+                        return;
+                    }
+
+                    const headingMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
+                    if (headingMatch) {
+                        flushOpenBlocks();
+                        const level = headingMatch[1].length;
+                        blocks.push(`<h${level}>${renderInline(headingMatch[2])}</h${level}>`);
+                        return;
+                    }
+
+                    if (/^---+$/.test(trimmed)) {
+                        flushOpenBlocks();
+                        blocks.push('<hr>');
+                        return;
+                    }
+
+                    if (/^>\s?/.test(trimmed)) {
+                        flushParagraph();
+                        flushList();
+                        quoteLines.push(trimmed.replace(/^>\s?/, ''));
+                        return;
+                    }
+
+                    const unorderedMatch = trimmed.match(/^[-*]\s+(.+)$/);
+                    const orderedMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+                    if (unorderedMatch || orderedMatch) {
+                        flushParagraph();
+                        flushQuote();
+                        const nextType = orderedMatch ? 'ol' : 'ul';
+                        if (listType && listType !== nextType) flushList();
+                        listType = nextType;
+                        listItems.push((orderedMatch || unorderedMatch)[1]);
+                        return;
+                    }
+
+                    flushList();
+                    flushQuote();
+                    paragraph.push(trimmed);
+                });
+
+                if (codeLines) {
+                    const languageClass = codeLanguage ? ` class="language-${escapeHtml(codeLanguage)}"` : '';
+                    blocks.push(`<pre><code${languageClass}>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+                }
+                flushOpenBlocks();
+                return blocks.join('');
+            };
+
+            const updateText = (element, value) => {
+                if (element && value !== undefined && value !== null && String(value).trim()) {
+                    element.textContent = value;
+                }
+            };
+
+            const postDefinitions = [
+                { slug: 'site-update', source: 'content/blog/site-update.md', order: 0 },
+                { slug: 'vibe-coding', source: 'content/blog/vibe-coding.md', order: 1 },
+                { slug: 'first-post', source: 'content/blog/first-post.md', order: 2 }
+            ];
+            const cards = [...document.querySelectorAll('[data-blog-post]')];
+            const articleDate = document.getElementById('blog-article-date');
+            const articleCategory = document.getElementById('blog-article-category');
+            const articleReadingTime = document.getElementById('blog-article-reading-time');
+
+            const fetchPost = async definition => {
+                const response = await fetch(definition.source);
+                if (!response.ok) throw new Error(`Blog post request failed: ${response.status}`);
+                const { metadata, markdown } = parseFrontMatter(await response.text());
+                return {
+                    ...definition,
+                    metadata,
+                    markdown,
+                    pinned: metadata.pinned === 'true' || definition.pinned === true
+                };
+            };
+
+            const sortPosts = (first, second) => {
+                if (first.pinned !== second.pinned) return Number(second.pinned) - Number(first.pinned);
+                const dateOrder = String(second.metadata.date || '').localeCompare(String(first.metadata.date || ''));
+                return dateOrder || first.order - second.order;
+            };
+
+            const renderCard = (card, post) => {
+                const { metadata } = post;
+                card.dataset.blogPost = post.slug;
+                const pin = card.querySelector('[data-blog-pin]');
+                updateText(pin, post.pinned ? 'Pinned' : '');
+                if (pin) pin.hidden = !post.pinned;
+                updateText(card.querySelector('[data-blog-date]'), metadata.date);
+                updateText(card.querySelector('[data-blog-category]'), metadata.category);
+                updateText(card.querySelector('[data-blog-title]'), metadata.title);
+                updateText(card.querySelector('[data-blog-excerpt]'), metadata.excerpt);
+                card.setAttribute('aria-label', metadata.title || post.slug);
+            };
+
+            const selectPost = post => {
+                cards.forEach(card => {
+                    const isActive = card.dataset.blogPost === post.slug;
+                    card.classList.toggle('is-active', isActive);
+                    card.setAttribute('aria-pressed', String(isActive));
+                });
+                updateText(articleDate, post.metadata.date);
+                updateText(articleCategory, post.metadata.category);
+                updateText(articleReadingTime, post.metadata.readingTime);
+                output.innerHTML = renderMarkdown(post.markdown);
+            };
+
+            const loadPosts = async () => {
+                try {
+                    const posts = (await Promise.all(postDefinitions.map(fetchPost))).sort(sortPosts);
+                    cards.forEach((card, index) => {
+                        const post = posts[index];
+                        if (!post) {
+                            card.hidden = true;
+                            return;
+                        }
+                        renderCard(card, post);
+                        card.addEventListener('click', () => selectPost(post));
+                    });
+                    selectPost(posts[0]);
+                } catch (error) {
+                    console.error('Blog Markdown 加载失败:', error);
+                    output.innerHTML = '<p class="blog-loading">The article could not be loaded. Please check the Markdown file path.</p>';
+                }
+            };
+
+            loadPosts();
+        });
 
         document.addEventListener("DOMContentLoaded", () => {
             const track = document.getElementById('game-gallery-track');

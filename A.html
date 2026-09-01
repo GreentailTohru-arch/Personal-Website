@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="is-preloading">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REN DESIGN STUDIO</title>
+    <title>Ren Kobayashi</title>
     <link rel="icon" type="image/png" href="assets/favicon.png" sizes="256x256">
     <link rel="shortcut icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="css/styles.css">
@@ -22,27 +22,41 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 </head>
-<body class="page-mode" data-page="home">
+<body class="page-mode is-preloading" data-page="home" data-background="rainy-store">
+
+    <div class="site-preloader" id="site-preloader" aria-hidden="true">
+        <div class="site-preloader__brand">
+            <img class="site-preloader__logo" src="assets/top-logo.png" alt="">
+            <span class="site-preloader__name">Kobayashi</span>
+        </div>
+    </div>
 
     <div id="color-bends-container"></div>
 
     <video id="home-video-background" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+
+    <iframe
+        id="home-model-background"
+        data-src="assets/rainy-convenience-store/index.html"
+        title="雨夜便利店 Three.js 背景"
+        loading="eager"
+        tabindex="-1"
+        aria-hidden="true"
+        sandbox="allow-scripts"></iframe>
+
+    <div id="home-background-shade" aria-hidden="true"></div>
 
     <div class="weather-widget" id="weather-widget" title="点击刷新天气">
         <span class="weather-emoji" id="weather-emoji">⛅</span>
         <span class="weather-text" id="weather-text">--°C</span>
     </div>
     <header id="home">
-        <h1>小林 然 | <span id="typing-text"></span><span class="typing-cursor">|</span></h1>
-        <div class="subtitle">REN DESIGN STUDIO</div>
-        <div class="tags">
-            <span class="tag">新媒体艺术家</span>
-            <span class="tag">设计师</span>
-            <span class="tag">全栈工程师</span>
-        </div>
-        <div class="scroll-hint">
-            Scroll To Explore
-            <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        <div class="home-hero-copy">
+            <div class="home-hero-title-row">
+                <img class="home-hero-mark" src="assets/ren-mark.png" alt="REN DES STU 标志" loading="eager">
+                <h1><span class="home-hero-name">小林 然</span> | <span id="typing-text"></span><span class="typing-cursor">|</span></h1>
+            </div>
+            <div class="subtitle">Ren Design-Studio</div>
         </div>
     </header>
 
@@ -65,10 +79,86 @@
             </div>
         </section>
 
+        <section class="blog-section" id="blog" aria-labelledby="blog-heading">
+            <div class="blog-shell">
+                <div class="blog-intro">
+                    <div>
+                        <p class="blog-kicker">Journal / Notes</p>
+                        <h2 class="section-title" id="blog-heading">Blog</h2>
+                    </div>
+                    <p class="blog-intro-copy">把旅途、灵感和正在发生的实验整理成一篇篇可以慢慢阅读的帖子。</p>
+                </div>
+
+                <div class="blog-layout">
+                    <aside class="blog-index" aria-label="Blog posts">
+                        <div class="blog-index-heading">
+                            <span>Latest posts</span>
+                            <span>03 entries</span>
+                        </div>
+
+                        <button class="blog-post-card is-active" type="button" data-blog-post="site-update" aria-pressed="true" aria-controls="blog-article">
+                            <div class="blog-post-meta">
+                                <span class="blog-post-pin" data-blog-pin>Pinned</span>
+                                <span data-blog-category>Update / 更新</span>
+                                <span data-blog-date>2026.09.01</span>
+                            </div>
+                            <h3 data-blog-title>个人网站更新日志</h3>
+                            <p data-blog-excerpt>记录这次主页结构、博客页面与交互体验的第一次更新。</p>
+                            <span class="blog-post-arrow" aria-hidden="true">↗</span>
+                        </button>
+
+                        <button class="blog-post-card" type="button" data-blog-post="vibe-coding" aria-pressed="false" aria-controls="blog-article">
+                            <div class="blog-post-meta">
+                                <span class="blog-post-pin" data-blog-pin hidden>Pinned</span>
+                                <span data-blog-category>Essay / 随笔</span>
+                                <span data-blog-date>2026.09.01</span>
+                            </div>
+                            <h3 data-blog-title>随笔：Vibe Coding 之旅</h3>
+                            <p data-blog-excerpt>从观察 AI 的快速发展，到用 Codex 完成应用开发与个人网站重构的一段记录。</p>
+                            <span class="blog-post-arrow" aria-hidden="true">↗</span>
+                        </button>
+
+                        <button class="blog-post-card" type="button" data-blog-post="first-post" aria-pressed="false" aria-controls="blog-article">
+                            <div class="blog-post-meta">
+                                <span class="blog-post-pin" data-blog-pin hidden>Pinned</span>
+                                <span data-blog-category>Field Notes / 现场记录</span>
+                                <span data-blog-date>2026.09.01</span>
+                            </div>
+                            <h3 data-blog-title>雪线下的灯还亮着</h3>
+                            <p data-blog-excerpt>在富士山脚下，记录一家便利店、一场雪，以及夜晚如何被一盏盏灯保存下来。</p>
+                            <span class="blog-post-arrow" aria-hidden="true">↗</span>
+                        </button>
+                    </aside>
+
+                    <article class="blog-article glass-panel" id="blog-article" aria-label="Blog article">
+                        <header class="blog-article-header">
+                            <div class="blog-article-meta">
+                                <span id="blog-article-date">2026.09.01</span>
+                                <span id="blog-article-category">Field Notes / 现场记录</span>
+                                <span id="blog-article-reading-time">4 min read</span>
+                            </div>
+                            <span class="blog-article-format">Markdown / Preview</span>
+                        </header>
+                        <div class="markdown-body" id="blog-markdown-output">
+                            <p class="blog-loading">Loading article…</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
         <section class="posts-section" id="projects">
-            <h2 class="section-title">Posts</h2>
+            <h2 class="section-title">Work</h2>
             <div class="posts-list">
-                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare2.html" target="_blank" class="post-card glass-panel" data-project-index="0">
+                <a href="https://github.com/GreentailTohru-arch/Tomatotodo" target="_blank" class="post-card glass-panel" data-project-index="0">
+                    <div class="post-info">
+                        <div class="post-title">Tomatotodo <span>番茄待办 - 专注 APP</span></div>
+                        <div class="post-date">2026.08.23</div>
+                    </div>
+                    <div class="arrow">→</div>
+                </a>
+
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare2.html" target="_blank" class="post-card glass-panel" data-project-index="1">
                     <div class="post-info">
                         <div class="post-title">Geometric Warfare 2 <span>几何战争 2</span></div>
                         <div class="post-date">2026.05.25</div>
@@ -76,7 +166,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel" data-project-index="1">
+                <a href="https://greentailtohru-arch.github.io/Point-Cloud-VFX-Lab/Point%20Cloud%20VFX%20Lab%202.0.html" target="_blank" class="post-card glass-panel" data-project-index="2">
                     <div class="post-info">
                         <div class="post-title">Point Cloud VFX Lab <span>点云动效实验室</span></div>
                         <div class="post-date">2026.05.21</div>
@@ -84,7 +174,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel" data-project-index="2">
+                <a href="https://greentailtohru-arch.github.io/Geometric-Warfare/Geometric%20Warfare.html" target="_blank" class="post-card glass-panel" data-project-index="3">
                     <div class="post-info">
                         <div class="post-title">Geometric Warfare <span>几何战争</span></div>
                         <div class="post-date">2026.05.15</div>
@@ -92,7 +182,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel" data-project-index="3">
+                <a href="https://greentailtohru-arch.github.io/Cultural-Relics-Display-Case/3.0.html" target="_blank" class="post-card glass-panel" data-project-index="4">
                     <div class="post-info">
                         <div class="post-title">Cultural Relics Display Case <span>文物展示台</span></div>
                         <div class="post-date">2026.05.01</div>
@@ -100,7 +190,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel" data-project-index="4">
+                <a href="https://greentailtohru-arch.github.io/Answering-Questions-and-Engraving/wenda.html" target="_blank" class="post-card glass-panel" data-project-index="5">
                     <div class="post-info">
                         <div class="post-title">Answering Questions & Engraving <span>新媒体互动技术结课作业</span></div>
                         <div class="post-date">2026.04.26</div>
@@ -108,7 +198,7 @@
                     <div class="arrow">→</div>
                 </a>
 
-                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel" data-project-index="5">
+                <a href="https://greentailtohru-arch.github.io/Alpha/index.html" target="_blank" class="post-card glass-panel" data-project-index="6">
                     <div class="post-info">
                         <div class="post-title">Alpha <span>初次尝试</span></div>
                         <div class="post-date">2025.12.02</div>
@@ -116,7 +206,7 @@
                     <div class="arrow">→</div>
                 </a>
             </div>
-            <div class="posts-pagination" id="posts-pagination" aria-label="项目分页" hidden>
+            <div class="posts-pagination" id="posts-pagination" aria-label="Work pagination" hidden>
                 <button type="button" class="posts-page-button" id="posts-page-prev" aria-label="上一页">←</button>
                 <span class="posts-page-status" id="posts-page-status" aria-live="polite">1 / 1</span>
                 <button type="button" class="posts-page-button posts-page-next" id="posts-page-next" aria-label="下一页">→</button>
@@ -416,23 +506,26 @@
     </footer>
 
     <div class="pill-nav-container" id="pill-nav-container">
-        <nav class="pill-nav custom-nav" id="pill-nav" aria-label="主导航"
-            style="--base: #000000; --pill-bg: #ffffff; --hover-text: #ffffff; --pill-text: #000000;">
-            <a class="pill-logo" href="#home" aria-label="返回首页">
-                <img src="assets/logo.svg" alt="Ren Kobayashi Logo">
+        <nav class="pill-nav custom-nav" id="pill-nav" aria-label="Primary navigation"
+            style="--base: transparent; --pill-bg: transparent; --hover-text: #ffffff; --pill-text: #ffffff;">
+            <a class="nav-brand-name" href="#home" aria-label="返回首页" data-hover-shuffle>Kobayashi</a>
+
+            <a class="pill-logo nav-logo2" href="#home" aria-label="返回首页">
+                <img src="assets/top-logo.png" alt="首页 Logo">
             </a>
 
             <div class="pill-nav-items desktop-only">
                 <ul class="pill-list" role="menubar">
-                    <li role="none"><a class="pill" href="#home" role="menuitem" aria-label="首页"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">首页</span><span class="pill-label-hover" aria-hidden="true">首页</span></span></a></li>
-                    <li role="none"><a class="pill" href="#about" role="menuitem" aria-label="关于"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">关于</span><span class="pill-label-hover" aria-hidden="true">关于</span></span></a></li>
-                    <li role="none"><a class="pill" href="#projects" role="menuitem" aria-label="项目"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">项目</span><span class="pill-label-hover" aria-hidden="true">项目</span></span></a></li>
-                    <li role="none"><a class="pill" href="#contact" role="menuitem" aria-label="联系方式"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">联系方式</span><span class="pill-label-hover" aria-hidden="true">联系方式</span></span></a></li>
-                    <li role="none"><a class="pill" href="#photo" role="menuitem" aria-label="摄影"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label">摄影</span><span class="pill-label-hover" aria-hidden="true">摄影</span></span></a></li>
+                    <li role="none"><a class="pill" href="#home" role="menuitem" aria-label="Home"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label" data-hover-shuffle>Home</span><span class="pill-label-hover" aria-hidden="true">Home</span></span></a></li>
+                    <li role="none"><a class="pill" href="#blog" role="menuitem" aria-label="Blog"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label" data-hover-shuffle>Blog</span><span class="pill-label-hover" aria-hidden="true">Blog</span></span></a></li>
+                    <li role="none"><a class="pill" href="#work" role="menuitem" aria-label="Work"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label" data-hover-shuffle>Work</span><span class="pill-label-hover" aria-hidden="true">Work</span></span></a></li>
+                    <li role="none"><a class="pill" href="#photo" role="menuitem" aria-label="Photo"><span class="hover-circle" aria-hidden="true"></span><span class="label-stack"><span class="pill-label" data-hover-shuffle>Photo</span><span class="pill-label-hover" aria-hidden="true">Photo</span></span></a></li>
                 </ul>
             </div>
 
-            <button class="mobile-menu-button mobile-only" id="pill-mobile-toggle" type="button" aria-label="打开菜单" aria-expanded="false">
+            <a class="nav-contact desktop-only" href="#contact" aria-label="Let's Connect" data-hover-shuffle>Let's Connect</a>
+
+            <button class="mobile-menu-button mobile-only" id="pill-mobile-toggle" type="button" aria-label="Open menu" aria-expanded="false">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
             </button>
@@ -440,11 +533,11 @@
 
         <div class="mobile-menu-popover mobile-only" id="pill-mobile-menu" style="--base: #000000; --pill-bg: #ffffff; --hover-text: #ffffff; --pill-text: #000000;">
             <ul class="mobile-menu-list">
-                <li><a class="mobile-menu-link" href="#home">首页</a></li>
-                <li><a class="mobile-menu-link" href="#about">关于</a></li>
-                <li><a class="mobile-menu-link" href="#projects">项目</a></li>
-                <li><a class="mobile-menu-link" href="#contact">联系方式</a></li>
-                <li><a class="mobile-menu-link" href="#photo">摄影</a></li>
+                <li><a class="mobile-menu-link" href="#home" data-hover-shuffle>Home</a></li>
+                <li><a class="mobile-menu-link" href="#blog" data-hover-shuffle>Blog</a></li>
+                <li><a class="mobile-menu-link" href="#work" data-hover-shuffle>Work</a></li>
+                <li><a class="mobile-menu-link" href="#photo" data-hover-shuffle>Photo</a></li>
+                <li><a class="mobile-menu-link" href="#contact" data-hover-shuffle>Let's Connect</a></li>
             </ul>
         </div>
     </div>

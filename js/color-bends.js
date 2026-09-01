@@ -68,6 +68,12 @@
         window.addEventListener('resize', handleResize); handleResize();
         const pointerTarget = new THREE.Vector2(0, 0), pointerCurrent = new THREE.Vector2(0, 0), pointerSmooth = 8, clock = new THREE.Clock();
         window.addEventListener('pointermove', (e) => { pointerTarget.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 - 1); });
-        function loop() { requestAnimationFrame(loop); material.uniforms.uTime.value = clock.elapsedTime; pointerCurrent.lerp(pointerTarget, Math.min(1, clock.getDelta() * pointerSmooth)); material.uniforms.uPointer.value.copy(pointerCurrent); renderer.render(scene, camera); }
+        function isBackgroundActive() {
+            const body = document.body;
+            if (!body || !body.classList.contains('page-mode')) return true;
+            if (body.dataset.page !== 'home') return true;
+            return (body.dataset.background || 'color-bends') === 'color-bends';
+        }
+        function loop() { requestAnimationFrame(loop); if (!isBackgroundActive()) return; material.uniforms.uTime.value = clock.elapsedTime; pointerCurrent.lerp(pointerTarget, Math.min(1, clock.getDelta() * pointerSmooth)); material.uniforms.uPointer.value.copy(pointerCurrent); renderer.render(scene, camera); }
         loop();
     
