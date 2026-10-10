@@ -4677,6 +4677,39 @@ Ctl.sphT.theta = 0.530;
 Ctl.target.set(-0.60, 1.45, -1.10);
 
 var _last = 0, _started = false;
+/* Host-controlled camera only. Geometry, materials and scene animation stay intact. */
+var homeCamera = (function () {
+  var enabled = false, progress = 0, current = 0;
+  var wideTarget = new T.Vector3(-0.60, 1.45, -1.10);
+  var widePosition = new T.Vector3().setFromSpherical(new T.Spherical(32, 1.238, 0.530)).add(wideTarget);
+  var shots = [
+    { position: widePosition, target: wideTarget },
+    { position: new T.Vector3(4.0, 3.8, 9.0), target: new T.Vector3(DOOR_CX, 1.35, ST_Z1) },
+    { position: new T.Vector3(11.5, 3.4, 2.0), target: new T.Vector3(2.58, 1.25, -3.80) },
+    { position: new T.Vector3(6.2, 3.5, -4.5), target: new T.Vector3(3.40, CURB_Y + 2.10, 3.02) },
+    { position: widePosition, target: wideTarget }
+  ];
+  var look = new T.Vector3();
+  window.addEventListener('message', function (event) {
+    if (event.source !== window.parent || event.data?.type !== 'home-camera-progress') return;
+    var value = event.data.progress;
+    if (typeof value !== 'number' || !Number.isFinite(value)) return;
+    enabled = true;
+    progress = Math.max(0, Math.min(4, value));
+    if (event.data.immediate) current = progress;
+  });
+  if (window.parent !== window) window.parent.postMessage({ type: 'home-camera-ready' }, '*');
+  return function (dt) {
+    if (!enabled) return false;
+    current += (progress - current) * (1 - Math.exp(-dt * 8));
+    var index = Math.min(3, Math.floor(current));
+    var mix = current - index;
+    camera.position.lerpVectors(shots[index].position, shots[index + 1].position, mix);
+    look.lerpVectors(shots[index].target, shots[index + 1].target, mix);
+    camera.lookAt(look);
+    return true;
+  };
+})();
 function frame(nowMs) {
   requestAnimationFrame(frame);
   /* self-healing viewport: covers layout that was not ready on the resize event */
@@ -4689,7 +4722,7 @@ function frame(nowMs) {
   _last = now;
   var t = (TIME_UNI.value += dt);
   updateDirector(t, dt);
-  Ctl.update(dt);
+  if (!homeCamera(dt)) Ctl.update(dt);
   WET_UNI.uCamP.value.copy(camera.position);
   renderFrame();
   if (!_started) { _started = true; document.body.classList.add('ready'); }

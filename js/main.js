@@ -135,6 +135,45 @@
             };
         })();
 
+        // Send scroll progress to the scene's camera bridge.
+        document.addEventListener('DOMContentLoaded', () => {
+            const model = document.getElementById('home-model-background');
+            const sections = [...document.querySelectorAll('[data-home-focus]'), document.getElementById('about')].filter(Boolean);
+            if (!model || !sections.length) return;
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let scheduled = false;
+            const update = () => {
+                scheduled = false;
+                if (document.body.dataset.page !== 'home') return;
+                let cameraProgress = 0;
+                if (!reducedMotion.matches) {
+                    const focusLine = window.innerHeight * .5;
+                    for (let i = 0; i < sections.length; i++) {
+                        const rect = sections[i].getBoundingClientRect();
+                        const progress = Math.max(0, Math.min(1, (focusLine - rect.top) / Math.max(1, window.innerHeight * .7)));
+                        if (!progress) break;
+                        const eased = progress * progress * (3 - 2 * progress);
+                        cameraProgress = i + eased;
+                    }
+                }
+                model.contentWindow?.postMessage({ type: 'home-camera-progress', progress: cameraProgress, immediate: reducedMotion.matches }, '*');
+            };
+            const schedule = () => {
+                if (scheduled) return;
+                scheduled = true;
+                requestAnimationFrame(update);
+            };
+            window.addEventListener('scroll', schedule, { passive: true });
+            window.addEventListener('resize', schedule);
+            document.addEventListener('pagechange', schedule);
+            reducedMotion.addEventListener('change', schedule);
+            model.addEventListener('load', schedule);
+            window.addEventListener('message', event => {
+                if (event.source === model.contentWindow && event.data?.type === 'home-camera-ready') schedule();
+            });
+            update();
+        });
+
         document.addEventListener("DOMContentLoaded", () => {
             const body = document.body;
             const video = document.getElementById('home-video-background');
